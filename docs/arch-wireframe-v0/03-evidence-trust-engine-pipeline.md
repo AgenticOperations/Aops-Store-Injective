@@ -236,10 +236,46 @@ accumulates, even though the underlying Evidence row never changes. This is inte
 
 ---
 
-## Open items carried forward to Section 4
+## Verification addendum (2026-08-16) — all three prior open items closed
 
-- BSC-testnet PancakeSwap V3 contract addresses — unconfirmed, needs a clean extraction pass.
-- Yield/health-factor lending protocol identity — unverified, no source checked yet.
-- Confirm Altana and 8004scan both have testnet-reachable endpoints (assumed but not
-  explicitly re-verified this session) before Section 4 treats testnet-first as fully
-  supported end-to-end.
+All three items previously carried forward as open/unverified are now closed, each against a
+primary source, not a docs-site summary:
+
+1. **BSC-testnet PancakeSwap V3 addresses — confirmed**, from PancakeSwap's own
+   `pancakeswap/pancake-v3-contracts` repo, `deployments/bscTestnet.json` (ground truth, not
+   the docs site — which turned out to be a client-rendered SPA with no server-side content
+   to scrape, so the earlier "confirmed via docs site" mainnet addresses were re-verified
+   against `deployments/bscMainnet.json` from the same repo and matched exactly):
+   `PancakeV3Factory 0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865` (same address both chains),
+   `NonfungiblePositionManager 0x427bF5b37357632377eCbEC9de3626C71A5396c1` (testnet — differs
+   from mainnet's `0x46A15B0b27311cedF172AB29E4f4766fbE7F4364`), `SwapRouter
+   0x1b81D678ffb9C0263b24A97847620C99d213eB14` (same both chains), plus `QuoterV2`, `TickLens`,
+   `MasterChefV3`, `V3Migrator`, `PancakeV3PoolDeployer`, `NonfungibleTokenPositionDescriptor`,
+   `PancakeInterfaceMulticall` — all confirmed per-chain in the same manifest.
+2. **Yield/health-factor lending protocol identity — confirmed as Venus Protocol**, via
+   `VenusProtocol/venus-protocol`'s `deployments/bsctestnet_addresses.json` (chainId 97,
+   `Unitroller 0x94d1820b2D1c7c7452A163983Dc888CEC546b77D`, `vBNB
+   0x2E7222e51c0f6e98610A1543Aa3836E092CDe62c`) and `bscmainnet_addresses.json` (chainId 56,
+   `Unitroller 0xfD36E2c2a6789Db23113685031d7F16329158384`). **Significant additional find**:
+   Venus ships its own official agent-skills package,
+   `VenusProtocol/venus-agent-skills` (`skills/venus-protocol-ops/`), purpose-built for
+   exactly our health-factor and yield categories — read-only risk analysis, health-factor
+   monitoring (`scripts/hf_monitor.py`, default safety line 1.2), market/APY comparison
+   (`scripts/fetch_markets.py`, official API `api.venus.io`, confirmed mainnet-only —
+   `chainId=56` in its own verified-endpoints notes; testnet market-data API availability is
+   not confirmed, but on-chain reads work on testnet regardless since the contracts are
+   deployed there), and simulate/execute scripts for deposit/withdraw/borrow/repay/collateral
+   actions. Its documented risk formula — `health = weightedCollateralUSD / debtUSD`,
+   thresholds High <1.15 / Medium 1.15–1.35 / Low ≥1.35 — is a directly reusable reference
+   point for our own health-factor category agent's guard logic (Section 4). This should be
+   evaluated as a build accelerator for that category, not re-derived from scratch.
+3. **Altana testnet — confirmed**, directly from `docs.altana.network`'s own `llms.txt`:
+   "BNB Smart Chain Testnet (chain id 97) is Altana's full-stack testnet — the keystore,
+   account contracts, and the Altana testnet relay are all deployed there," with a
+   ready-made `BNB_TESTNET` SDK config.
+4. **8004scan testnet — confirmed**, via a live call to
+   `GET https://8004scan.io/api/v1/public/chains`: `{"chain_key":"bsc_testnet","chain_id":97,
+   "name":"BSC Testnet","is_testnet":true,"enabled":true,"provider_status":"available"}`.
+
+Testnet-first, full end-to-end (Altana + 8004scan + AACP + PancakeSwap + Venus, all four
+category domains), is now confirmed supportable with no remaining unverified dependency.
