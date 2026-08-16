@@ -100,3 +100,45 @@ entries; correct forward with a new entry if something above turns out wrong.
   testnet, 8004scan testnet) is confirmed real. `README.md`'s branch-protection/PR-workflow
   note still not added (small, repeatedly deferred, low urgency). No implementation has
   begun.
+
+## 2026-08-16 — Section 4 written (why we build agents, resolved; four category agents' shared execution shape)
+
+- User raised a direct design challenge: "we're a marketplace, why are we building agents?"
+  Resolved by separating two concepts that had been implicitly conflated: the marketplace
+  (Sections 1–3, agent-agnostic — discovers/verifies/scores *any* agent) vs. the four category
+  agents (just the first four Listings in it, built by us, going through the identical
+  pipeline any third party's agent would). Grounded the answer in two sourced facts from
+  `docs/bnb-hackathon/research-findings.md` (the project's pre-existing hackathon-research
+  file, read this session): (1) the main track's judging criteria explicitly require "Agent
+  Diversity — all 4 categories equal depth," single-category submissions "score poorly by
+  design"; (2) a cited academic study found only ~3% of BSC-registered ERC-8004 agents expose
+  a live, reachable endpoint — the real third-party agent ecosystem is overwhelmingly
+  non-functional today, so relying on organic third-party listings to fill all four categories
+  by submission time isn't realistic. User confirmed: build simple versions of all four now,
+  both to satisfy the requirement and to serve as a live end-to-end integration test of the
+  Section 1–3 pipeline (Listing → Authorization → Evidence → Performance rollup) with real
+  testnet chain activity behind it, before any third-party agent ever lists.
+- Wrote `docs/arch-wireframe-v0/04-category-agent-execution-architecture.md`: opens with the
+  above resolution (4.0) so it isn't left as an implicit assumption again; dependency map to
+  Sections 1–3 (4.1); a shared READ→DECIDE→ACT→RECORD loop shape common to all four agents,
+  explicitly validated against the `senior-architect` skill's pattern-selection workflow as a
+  Modular-Monolith + Hexagonal(Ports & Adapters) fit rather than picked ad hoc (4.2); the four
+  agents' first-version decision rules kept deliberately simple (threshold checks, not
+  optimizers) — rebalancer/grid via PancakeSwap V3 `SwapRouter`, yield/health-factor via Venus
+  `vToken` actions, health-factor reusing Venus's own published risk formula from
+  `venus-agent-skills` (confirmed in Section 3) rather than inventing risk math (4.3); how
+  actions route through the existing Altana-session default rail vs. optional AACP-wrapping
+  per action, introducing no new capital-custody rail (4.4); an explicit rationale for why
+  "simple" is a deliberate engineering choice (isolates pipeline bugs from strategy bugs,
+  trivially unit-testable pure DECIDE step, upgradeable later without touching the pipeline)
+  (4.5); what a clean four-agent testnet run actually proves about the pipeline (4.6); and
+  open items explicitly scoped as implementation-time config decisions, not architectural gaps
+  (4.7 — threshold values, AACP-wrap-every-action-vs-sampled question, extent of
+  `venus-agent-skills` reuse).
+- Followed the standing present→approve→write process: first draft used architecture
+  terminology without enough plain-language grounding (user feedback: "i cannot understadn
+  what you gave"), rewritten from scratch around concrete examples; user then approved
+  proceeding to write it to file.
+- Section 5 (hiring flows / Authorization / Altana integration) and Section 6 (build
+  phasing/sequencing) remain not started. `README.md` branch-protection note still deferred.
+  No implementation has begun.
