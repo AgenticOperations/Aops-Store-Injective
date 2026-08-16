@@ -79,9 +79,24 @@ entries; correct forward with a new entry if something above turns out wrong.
   as a `chain-adapters/{aacp,defi}` environment-config change only, never a code change —
   stated explicitly in 3.7.
 - Committed and pushed Sections 1 (corrected) and 3 (new) to `planning/docs`.
-- Still open: BSC-testnet PancakeSwap V3 addresses unconfirmed (mainnet addresses are
-  confirmed); yield/health-factor lending protocol identity (candidate: Venus) unverified;
-  Altana/8004scan testnet-endpoint availability assumed but not re-verified — all three must
-  close before Section 4 depends on them. Section 4 (category-agent execution architecture)
-  not yet started. `README.md`'s branch-protection/PR-workflow note still not added (small,
-  repeatedly deferred, low urgency). No implementation has begun.
+- All three items above were closed in the same session via direct primary-source
+  verification (no docs-site summarizing, no inference): BSC-testnet PancakeSwap V3
+  addresses confirmed from `pancakeswap/pancake-v3-contracts`'s `deployments/bscTestnet.json`
+  (mainnet addresses cross-checked against `bscMainnet.json` and matched what was recorded
+  earlier). Yield/health-factor lending protocol confirmed as **Venus Protocol** —
+  `VenusProtocol/venus-protocol`'s own testnet (`bsctestnet_addresses.json`, chainId 97) and
+  mainnet (`bscmainnet_addresses.json`, chainId 56) deployment manifests. **Notable find**:
+  Venus ships an official agent-skills package, `VenusProtocol/venus-agent-skills`, with a
+  ready-made health-factor formula (`health = weightedCollateralUSD / debtUSD`, thresholds
+  1.15/1.35), an `hf_monitor.py` script, and market/APY tooling — flagged in Section 3 as a
+  build accelerator to evaluate for the health-factor and yield category agents rather than
+  building that logic from scratch. Altana testnet confirmed via its own `llms.txt` (BNB
+  Testnet chain 97, full-stack: keystore, account contracts, relay). 8004scan testnet
+  confirmed via a live `GET /api/v1/public/chains` call (`bsc_testnet`, chainId 97,
+  `enabled: true`). All findings written into Section 3's Verification Addendum, committed
+  and pushed (`cd95fae`).
+- Section 4 (category-agent execution architecture) not yet started — now unblocked, since
+  every dependency it needs (PancakeSwap testnet, Venus testnet + agent-skills, Altana
+  testnet, 8004scan testnet) is confirmed real. `README.md`'s branch-protection/PR-workflow
+  note still not added (small, repeatedly deferred, low urgency). No implementation has
+  begun.
