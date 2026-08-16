@@ -142,3 +142,54 @@ entries; correct forward with a new entry if something above turns out wrong.
 - Section 5 (hiring flows / Authorization / Altana integration) and Section 6 (build
   phasing/sequencing) remain not started. `README.md` branch-protection note still deferred.
   No implementation has begun.
+
+## 2026-08-16 — Section 5 written (buyer-facing trust UI, hiring flows, Settlement Review,
+hosting/`aops` CLI, Watcher)
+
+- User raised the design gap directly: trust-data engine (Sections 1–3) had no buyer-facing
+  surface designed at all — "how detailed and in depth can we show the proof of work... this
+  should be focused on the marketplace as well from the client and ui perspective." Also
+  proposed a Trustpilot/Yelp-style settlement-triggered peer review system, and asked where
+  agents actually run/get hosted, floating a marketplace-hosted-cloud tier as a monetizable
+  differentiator.
+- Researched BNB Agent Studio primary sources before answering (not guessed): fetched the
+  `@bnbagent/studio-cli` npm package's own README + 13 bundled skill reference docs via
+  `npm pack` (its GitHub source repo, `bnb-chain/bnbagent-studio`, returns 404 — not publicly
+  listed, only the compiled npm artifact is inspectable), and the `bnbagent-sdk` repo README
+  via `gh api`. Confirmed: `bag` (Agent Studio's CLI) is Commander.js-based and explicitly
+  built for automation (`bag deploy --provider aws --yes` supports non-interactive runs); the
+  AWS deploy path is delegated to a separate pinned tool authenticating off standard AWS
+  credentials (env/profile), not hardcoded per-user — meaning "deploy to AgentOps's own AWS
+  account instead of the user's" is the documented self-deploy path pointed at different
+  credentials, not a new mechanism. AWS Bedrock AgentCore pricing (pay-per-use,
+  vCPU-hour/GB-hour) and BNB's "no AWS account/credit card required" trial were confirmed as a
+  capped ~$3,000 promotional campaign, not permanent managed billing — this directly informed
+  keeping the four category agents self-hosted in `apps/worker` rather than building a
+  competing hosting platform prematurely.
+- Delivered a feasibility verdict on the user's proposed `aops` CLI wrapper idea (wrap `bag`,
+  offer self-host vs. AgentOps-hosted-with-$5-credit at deploy time) before writing Section 5,
+  per the user's explicit sequencing — confirmed feasible, with the concrete mechanism being
+  credential-swap on `bag`'s existing delegated AWS deploy path, not a fork or new deploy tool.
+- Wrote `docs/arch-wireframe-v0/05-buyer-trust-hiring-hosting.md`: buyer-facing trust UI as
+  four layers (agent card / evidence timeline / methodology transparency / category-scoped
+  comparison); the four hiring flows with explicit failure paths; a new **Settlement Review**
+  Evidence source (settlement-triggered, optional+public for human buyers, policy-enforced
+  mandatory structured feedback for agent-to-agent buyers, ties into 1.9's existing
+  `economic_relationship_tier` term rather than adding a new scoring path); a **Watcher**
+  subsystem for the hosted tier (CloudWatch + independent chain reads, never trusting the
+  agent's own self-report); and the hosting-tier/`aops` model with a billing-ledger sketch,
+  AWS-quota multi-tenancy handling, and per-agent secret isolation.
+- Ran a self-audit pass before writing (user explicitly requested this) and found 9 real gaps
+  in the chat-drafted version — missing UI empty-states, an unenforced category-scoping rule,
+  an unredacted-payload disclosure risk, missing hiring-flow failure paths, a hand-waved
+  agent-hires-agent flow, Settlement Review firing before dispute-window resolution, no
+  enforcement mechanism or authenticity binding on reviews, no hosting billing/quota/isolation
+  mechanics, and — most substantively — Watcher evidence being scored as if independent when
+  it's actually operator-observed (the platform watching its own hosted infrastructure, not a
+  third party). All nine fixed inline in the written section, not deferred, since each was a
+  correctness/security issue rather than a tuning parameter. Three genuinely
+  implementation-time-only items (grace-window length, whether agent-to-agent review
+  enforcement is later strengthened to contract-level, exact package placement for the
+  hosting ledger/`aops`) are scoped explicitly in 5.8, matching Section 4.7's pattern.
+- Section 6 (build phasing/sequencing) remains not started. `README.md` branch-protection note
+  still deferred. No implementation has begun.
