@@ -1,7 +1,9 @@
 ---
 created: 2026-08-16
 project: BUILD-BNB — BNB "Build the Era" marketplace
-status: verified against primary sources (see Provenance)
+status: verified against primary sources (see Provenance); re-audited 2026-08-16 against live
+  AACP testnet API (`aacp-backend.termix.live`) and raw whitepaper text — see Provenance
+  Addendum
 section: 1 of N — Data Model, State Machines, Proof & Rating Mechanics
 ---
 
@@ -24,19 +26,62 @@ Two verification passes back this document:
      detailed inline below. This is the first time AACP's actual protocol spec was read
      directly; everything prior was secondhand paraphrase.
 
-A significant finding from the primary pass: AACP's `CEX_CAPITAL` job type (a vault-based
-delegated-capital pattern that would have matched our four mandatory categories closely) has
-its core contracts (`IAACPStaking.sol`, and everything vault/guard-related) listed as
-**"Planned"**, not shipped, in AACP's own public repo. No deployed `StrategyVault`/
-`TransactionGuard` contract was found. The generic `PROGRAM`-type job flow (Provider/
-Evaluator/Groth16 proof), by contrast, matches the real experience described in a
-third-party developer's integration questions (referenced earlier in this project's
-research) — it appears to be the actually-working, testnet-live path.
+A significant finding from the primary pass: AACP's `CEX_CAPITAL` job type has its reference
+contracts listed as "Planned" in AACP's public *interfaces* repo (`aacp-whitepaper`'s
+`contracts/README.md`) — but that repo turned out to be a stale/aspirational reference doc,
+not a description of what's actually deployed (see Provenance Addendum below for the
+correction). The generic `PROGRAM`-type job flow (Provider/Evaluator/Groth16 proof) matches
+the real, testnet-live path confirmed via the live backend.
 
 **Decision made on this basis**: buyer capital custody stays entirely on Altana's Keystore/
 session rail. AACP is integrated as a verification service only, via `PROGRAM`-type jobs,
-never as a custody rail. `CEX_CAPITAL` is schema-accommodated for a future revisit if its
-contracts ship, but nothing in this build depends on it.
+never as a custody rail. `CEX_CAPITAL` is out of scope for this build — see the Addendum for
+the corrected reason (it's a real, shipped feature, just the wrong domain).
+
+## Provenance Addendum (2026-08-16 deep audit — direct raw-source and live-API verification)
+
+A second, deeper audit re-verified every load-bearing AACP claim above directly against the
+raw whitepaper markdown (downloaded and grepped, not summarized), `gh api` reads of
+`termix-agent-skills`, and live `curl` calls to `aacp-backend.termix.live`
+(`GET /api/v1/config`, `/api/v1/stats`). Four corrections came out of this pass:
+
+1. **`CEX_CAPITAL` is real and shipped — the original "unshipped" reasoning was wrong.**
+   Live stats show 90,329 `CEX_CAPITAL` jobs ever created (second-most-used strategy type on
+   the network, after `RUBRIC`). It's not a vault-based on-chain DeFi pattern at all — it's
+   CEX futures trading via a TEE holding encrypted exchange API keys
+   (`StrategyVaultFactory.deployVault()` is called with `capital=0` since funds stay on the
+   exchange; registration is `POST /api/v1/tee/jobs` with an encrypted API key and an allowed-
+   symbol list). **Corrected reasoning for excluding it**: not "contracts aren't shipped," but
+   "wrong domain" — it's centralized-exchange derivatives trading, not on-chain DeFi vault
+   management, so it doesn't match any of our four categories regardless of maturity. The
+   architectural decision (keep buyer capital on Altana, never route it through
+   `CEX_CAPITAL`) is unchanged; only the stated reason was wrong. All `CEX_CAPITAL`
+   references below are corrected accordingly.
+2. **AACP `PROGRAM`-proof evidence level downgraded L4 → L3.** Live `/api/v1/config` returns
+   `"features": {"zkVmEnabled": false, "teeEnabled": true, "realGroth16": false}` — the current
+   testnet deployment does not cryptographically enforce Groth16 proof verification for
+   PROGRAM-type jobs (`RiscZeroGroth16Verifier`, `RiscZeroVerifierAdapter`, and
+   `Groth16VerifierRouter` are all `null` in the deployed config). An AACP PROGRAM
+   "verification" today is a real, independently-run evaluation but not yet a trustlessly
+   *proven* one — it should sit at L3 (comparable to marketplace-computed domain KPIs), not
+   L4, until `realGroth16` flips true on whichever deployment we integrate against. This is
+   designed as an automatic upgrade: the evidence pipeline should read the live feature-flag
+   state at ingestion time and stamp L4 the moment real Groth16 enforcement is confirmed live,
+   with no code change required. See 1.5, 1.2, and 1.8 for the corrected level throughout.
+3. **Reputation default corrected 50 → 90 (with the discrepancy flagged, not silently
+   resolved).** The whitepaper narrative states new agents start at `reputationScore` 50;
+   the live `client-create-job.md` implementation doc states the staking-lock calculation
+   defaults new agents to 90. No direct API call confirmed one specific new agent's actual
+   starting score, so this isn't fully closed — but the live-implementation doc is treated as
+   authoritative over whitepaper narrative, since it's describing the deployed calculation
+   rather than a design intent. This roughly halves the lock our agent's own AACP staking
+   pool needs to carry as a new Provider (see 1.7).
+4. **Institutional tier's AACP-dependency language softened** given (2) — see 1.8.
+
+None of these four corrections change the two-rail design itself (AACP optional/
+supplementary, marketplace-native fallback always available and always the thing that gates
+`LIVE`) — the design already tolerated AACP immaturity gracefully. They change specific
+numbers and stated reasoning that were previously either wrong or overstated.
 
 ---
 
@@ -96,12 +141,13 @@ LIVE → DEGRADED → SUSPENDED → REVOKED`, with guards:
 **Proof requirement is not uniform across listing_type:**
 
 - **persistent-service, task** (capital-touching): the `EXECUTION_VERIFIED` gate requires
-  either an AACP `PROGRAM`-type verified job (Groth16 proof, preferred, evidence_level L4 —
-  see 1.7) **or** a marketplace-native execution-verification fallback (our own re-run of
-  the sandboxed test invocation, logged at L3). AACP is not a hard dependency for going
-  live — its backend host is confirmed (`aacp-backend.termix.live`) but a third-party
-  service is still a single point of failure we don't need to accept for the whole pipeline.
-  What AACP gates instead is the trust-tier ceiling (1.8).
+  either an AACP `PROGRAM`-type verified job (evidence_level L3 while `realGroth16: false`
+  on the deployment we integrate against, auto-upgrading to L4 once real Groth16 enforcement
+  goes live — see 1.7) **or** a marketplace-native execution-verification fallback (our own
+  re-run of the sandboxed test invocation, also logged at L3). AACP is not a hard dependency
+  for going live — its backend host is confirmed (`aacp-backend.termix.live`) but a
+  third-party service is still a single point of failure we don't need to accept for the
+  whole pipeline. What AACP gates instead is the trust-tier ceiling (1.8).
 - **paid-capability** (x402, stateless, no capital exposure): skips the execution-verification
   gate entirely — `CAPABILITY_VERIFIED → COMMERCIAL_VERIFIED` directly.
 - **agent-hires-agent**: inherits whichever underlying flow it wraps.
@@ -208,7 +254,7 @@ action+wallet+agent+authorization+policy+tx.
 | Self-declared `agentURI` capability | CAPABILITY | L0 | Display-only, never scored |
 | Raw ERC-8004 feedback event | OUTCOME (weak) | L1 | Sybil-discount applies before use (1.10) |
 | Marketplace onboarding execution test | CAPABILITY | L2 | Gates Listing → CAPABILITY_VERIFIED |
-| AACP `PROGRAM`-type job + Groth16 proof | EXECUTION | **L4** | Corrected from earlier L5 — one independent Evaluator's proof, real but not self-corroborated |
+| AACP `PROGRAM`-type job + Groth16 proof | EXECUTION | **L3** (auto-upgrades to L4 once `realGroth16: true` on the integrated deployment) | Currently not cryptographically enforced on testnet (`GET /api/v1/config` → `realGroth16: false`) — real, independent evaluation today, but not yet a trustless proof |
 | AACP aggregate `reputationScore` (five-factor, ingested periodically) | RELIABILITY | L3 | New source — cross-check against our own computed score |
 | Marketplace-computed domain KPI from on-chain state | OUTCOME | L3–L4 | Computed by worker reading chain state directly |
 | Marketplace-run controlled benchmark ("Prove It" page = TermiX Agent Advantage Report format) | EXECUTION + OUTCOME | L6 | ≥3 paired runs, ≥1 trading/security-adjacent, per TermiX's own bounty rubric |
@@ -239,8 +285,11 @@ both against the spirit of independent proof and likely to trip their own fraud 
 RISC-V ELF binary) defines a deterministic input→output check; deliverable read from stdin,
 exit 0 = pass. Evaluator runs it in a zkVM (SP1 or RISC Zero backend), submits a Groth16
 proof on-chain (~200k gas). `evaluate(jobId, passed, reasonCID)` → `complete()` settles.
-`CEX_CAPITAL` (the vault-based delegated-capital type) is explicitly **not** used — its
-contracts are unshipped (Provenance, above). Buyer capital never leaves Altana's Keystore.
+`CEX_CAPITAL` is explicitly **not** used — it's a real, shipped strategy type (90,329 jobs
+network-wide, second-most-used after `RUBRIC`), but it's CEX futures trading via a TEE
+holding encrypted exchange API keys, not on-chain DeFi vault management — wrong domain for
+all four of our categories regardless of maturity (Provenance Addendum, above). Buyer capital
+never leaves Altana's Keystore.
 
 **Fee split (corrected from earlier "90/2" figure)**: `platformFee` 2% fixed +
 `evaluatorFee` 3% (L0/L1) or 4% (L2/L3) + Provider keeps the remainder (94% at L2). Speed
@@ -252,10 +301,28 @@ circuit-breaker budget (production requirements, referenced from
 **Staking**: our agent registers as AACP Provider via its ERC-8004 NFT, deposits ≥100 USDC
 into AACP's staking pool (two-balance Available/Locked model). Each `setProvider` event
 locks `budget × 10% ÷ reputationCoefficient` from Available until the job reaches terminal
-state, where `reputationCoefficient = min(1.0, reputationScore/100)` — new agents
-(reputationScore 50) lock 2× more than established ones (100). This is separate operating
-capital from the buyer's delegated funds, needing its own funding/planning line, and
-capital efficiency improves over time as our agent's own AACP track record builds.
+state, where `reputationCoefficient = min(1.0, reputationScore/100)`. New agents start at
+reputationScore 90 per the live implementation doc (whitepaper narrative states 50 — the
+live figure is treated as authoritative since it describes the deployed calculation; flagged
+as an open discrepancy, not fully closed — see Provenance Addendum), so a new agent's lock is
+close to the mature-agent floor from day one, not the 2× penalty a score-50 default would
+imply. This is separate operating capital from the buyer's delegated funds, needing its own
+funding/planning line.
+
+**Client-side staking is also required, not just Provider-side.** The Client role (our
+marketplace, acting on the buyer's behalf) must itself hold a staking pool with ≥100 USDC
+before `createJob` will succeed — confirmed via the live `client-create-job.md` doc, which
+documents `createJob` reverting with selector `0x4e236e9a` when the Client has no staking
+pool. Lock formula is the same shape, at a lighter 5% coefficient: `budget × 5% ÷
+reputationCoefficient`. This means the marketplace needs its own staked AACP identity (not
+just the category-agent Provider identity) funded and maintained as a prerequisite for
+routing any action through an `AACP_PROGRAM` job — a second operating-capital line, not one.
+
+**Real `createJob` ABI** (confirmed live, corrected from an earlier assumed `fund()` step):
+`createJob(clientId, budget, deadline, strategyType, programHash, rubricHash) → jobId`;
+funding is a separate `setBudget(jobId, amount)` call, not a distinctly-named `fund()`
+function — see 1.4/1.7 job-lifecycle references and Section 3's orchestration pipeline for
+where this ABI is consumed.
 
 **Minimum verification strategy by job budget** (AACP's own rule, relevant to how large a
 single wrapped action can be before a stronger strategy than PROGRAM alone is required):
@@ -275,7 +342,7 @@ actions instead of forcing AACP.
 | Basic | Listing reached `LIVE`. No execution/outcome evidence required. |
 | Verified | ≥1 `EXECUTION` proof (L3+, AACP `PROGRAM` preferred) in trailing window |
 | Proven | ≥3 `OUTCOME` evidence records (L3+), confidence above threshold — this is TermiX's Agent Advantage Report qualifying set (≥3 tasks, ≥1 trading/security-adjacent); hitting Proven and passing the TermiX bounty requirement are the same event |
-| Institutional | Proven + ≥1 L6 marketplace-run benchmark **+ multiple AACP-verified (L4) executions** (a single third-party Evaluator's proof, however cryptographically real, is still one dependency — not fully within our control the way a marketplace-run benchmark is) + minimum time-in-market (e.g. 30 days continuous RUNNING with no unexplained DEGRADED/ATTENTION_REQUIRED gaps) |
+| Institutional | Proven + ≥1 L6 marketplace-run benchmark **+ multiple AACP-verified executions** (currently L3 while `realGroth16: false` — see Provenance Addendum; a single third-party Evaluator's evaluation, real but not yet cryptographically enforced on the deployment we integrate against, is still one dependency, not fully within our control the way a marketplace-run benchmark is — this gate should be read as "multiple independent AACP evaluations," with the tier's evidentiary strength auto-improving to true L4 the moment `realGroth16` flips true, no schema change needed) + minimum time-in-market (e.g. 30 days continuous RUNNING with no unexplained DEGRADED/ATTENTION_REQUIRED gaps) |
 
 ---
 
