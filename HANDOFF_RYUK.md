@@ -1,8 +1,15 @@
-# Handoff Log
+# Handoff Log — Ryuk
 
 Append-only. Each agent session adds a new entry below at session close — what was done,
 what's still open, anything the next session needs to know. Never edit or delete prior
 entries; correct forward with a new entry if something above turns out wrong.
+
+> Split from a single shared `HANDOFF.md` on 2026-08-24, when the two-collaborator
+> (Ryuk/KC) workflow was formalized. Every entry below this note predates the split and was
+> written during sessions driven by Ryuk — attributed here on that basis, not because each
+> entry says so explicitly. If any entry below actually belongs to KC, move it to
+> `HANDOFF_KC.md` rather than editing it in place. See `CLAUDE.md` for the split rule going
+> forward.
 
 ---
 
@@ -336,3 +343,65 @@ hosting/`aops` CLI, Watcher)
   how `census` is rate-limited at population scale · where the agents repo lives.
 - **Both files from today (`04b-...` and `00-...`) plus these HANDOFF entries are written but
   NOT committed** — left on the working tree of `planning/docs` for review.
+
+## 2026-08-24 — Doc-pipeline restructuring, Ingestion audit, Fraud/Sybil final-review doc
+
+- **Root cause diagnosed**: recurring conflict where new ideas discussed in chat kept getting
+  silently blocked by stale content in old docs, or silently overwrote it with nothing marked.
+  Concrete evidence found via direct grep/read: three files (`01-data-model-state-machines.md`,
+  `03-evidence-trust-engine-pipeline.md`, Decision `0002`) simultaneously described three
+  different, contradictory trust-tier systems, and the old `COMMERCIAL_VERIFIED → RISK_REVIEW →
+  APPROVED` chain had been dropped from the ladder with no record of the decision.
+- **Restructured the doc pipeline into three tiers**: `docs/unverified-ideas-and-flows/` (raw,
+  non-binding) → `docs/architecture/` (structured/verified, still refinable — merged from
+  `arch-wireframe-v0/` + `decisions/` via `git mv`) → `docs/final-review-docs/` (canonical,
+  factually-proven, source of truth; architecture reconciles toward it, never the reverse).
+  Codified as a mandatory same-turn supersession rule in a new root `CLAUDE.md` (auto-loaded
+  every session): the moment something is superseded, stamp/reconcile it, update the
+  `final-review-docs/README.md` status table, and name any dropped item explicitly in an "open
+  architectural gaps" section — never silently.
+- Created root `PRODUCT-STATE.md` (living, overwritten snapshot — distinct from this
+  chronological log) and split `HANDOFF.md` into this file plus `HANDOFF_KC.md`, one
+  append-only log per collaborator.
+- **Audited `final-review-docs/01-ingestion-and-registration-of-agents.md`** (already existed
+  from a prior session) against primary sources for completeness, per explicit user request
+  ("is it missing out on things"). Found and fixed four real issues: (1) frontmatter
+  self-contradicted its own canonical-authority status; (2) `04-category-agent-execution-
+  architecture.md` falsely claims the Venus `≥1.30`/`≥1.40` recovery thresholds are "confirmed
+  in Section 3" — verified via grep they aren't, only `04b`'s direct `venus-agent-skills`
+  citation has them; corrected the attribution in `01` (§6.2) — **`04` itself still needs the
+  same fix, not yet done**; (3) the self-dealing guard (`03` §3.3 step 6) only checks
+  `evaluator_address` against marketplace-controlled identities, not owner-controlled ones,
+  leaving the owner-funded High-trust path (§7.2) open to owner self-certification — added to
+  §12 as an explicit open gap, not silently patched since it needed real design; (4) a broken
+  dangling sentence in §10 (`apps/watch`) fixed to match Section 0's actual table text.
+- **Wrote `docs/final-review-docs/02-fraud-sybil-detection.md`** — the full mechanics behind
+  `01`/`03`'s previously-just-named sybil signal categories (wallet-cluster proximity via
+  on-chain graph walk + `IdentityLink` table, review-timing burst z-score, reciprocal-pair/
+  short-cycle detection, noisy-OR combination into `independence_confidence`), plus the
+  self-dealing guard extension from finding (3) above, plus a sandbox-attempt rate-limit guard
+  keyed to owner-wallet-cluster. **Scoped explicitly, per user direction, as additive and
+  hackathon-deferred** — never gates the ladder, hiring, or any trust tier; exact thresholds
+  (hop limits, windows, z-score cutoffs, rate-limit N) are named as open in §7, not silently
+  assumed. Stamped the sections it supersedes in `architecture/01` §1.10 and `architecture/03`
+  §3.6 and §3.3 step 6; updated `final-review-docs/README.md`'s status table.
+- **Builder Console explicitly deferred** — user correctly caught that I was starting to design
+  UI/screens over flows (the Medium-trust sandbox trigger, the High-trust job flow) that,
+  while mechanically specified in `01` §6-7, have no defined console-level interaction model
+  yet, and two real open decisions (`01` §12: `commercial_config` ceiling formula, TermiX L6
+  re-homing) still block it. Correct call — not building it until the flows it would expose are
+  themselves real.
+- **Verified `01` §6's sandbox mechanism is NOT under-specified**, contrary to an assumption
+  raised mid-session — re-read directly: Stage-0 opportunistic decision filter, Stage-1's full
+  mechanism (Anvil fork of BSC mainnet, category-specific perturbation, session grant, outcome
+  grading, graduated scenario series) and an honest limits section (§6.3) are all already
+  written. What's missing is the console-facing interaction layer on top of it, not the
+  mechanism itself.
+- **User-set goal for what comes next** (recorded here so it isn't lost): finalize
+  `docs/architecture/04`/`04b` (category-agent execution — the actual mechanics of the four
+  mandated categories) into `final-review-docs/`, formalize execution/hiring-job/proof-evidence
+  work, and resolve the two open `01` §12 decisions — with the explicit end goal being the
+  **Discovery Engine as the last unbuilt component**, once everything it depends on (especially
+  the proof/evidence engine) is finalized end-to-end. See `HANDOFF_KC.md` for the corresponding
+  forward-looking note left for the next session on that side.
+- Committed and pushed to `planning/docs` this session (see commit history for exact hashes).

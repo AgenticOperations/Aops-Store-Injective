@@ -2,7 +2,7 @@
 created: 2026-08-16
 project: BUILD-BNB — BNB "Build the Era" marketplace
 status: SUPERSEDED for repo topology, package tree, and web↔worker communication — see
-  00-repo-architecture-and-agent-conventions.md and docs/decisions/0001-agents-repo-separation.md.
+  00-repo-architecture-and-agent-conventions.md and docs/architecture/decisions/0001-agents-repo-separation.md.
   This file assumed the four category agents run inside this repository (apps/worker/loops,
   packages/agent-strategies); Decision 0001 moved them to a separate repository. The
   guard-placement principle in 2.4 (pure functions, called identically by every surface) is
@@ -81,7 +81,7 @@ BUILD-BNB/
 ├── contracts/                      # Foundry — only if the marketplace itself needs on-chain pieces
 │                                    # (challenge-nonce registry, marketplace-run benchmark attestation)
 │
-└── docs/arch-wireframe-v0/
+└── docs/architecture/
 ```
 
 ---

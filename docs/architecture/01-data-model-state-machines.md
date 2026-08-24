@@ -134,33 +134,54 @@ Agent-Studio-native agents).
 
 ## 1.2 Listing — verification gates, proof requirements by type, history retention
 
-State machine: `DISCOVERED → CLAIMED → OWNERSHIP_VERIFIED → ENDPOINT_VERIFIED →
-CAPABILITY_VERIFIED → EXECUTION_VERIFIED → COMMERCIAL_VERIFIED → RISK_REVIEW → APPROVED →
-LIVE → DEGRADED → SUSPENDED → REVOKED`, with guards:
+**Current state machine** (reconciled 2026-08-24 against
+`docs/final-review-docs/01-ingestion-and-registration-of-agents.md`, the canonical source —
+read that file for the full walkthrough of each transition):
+
+`DISCOVERED → CLAIMED → OWNERSHIP_VERIFIED → ENDPOINT_VERIFIED → LIVE (Low trust,
+compulsory) → [Medium trust, optional] → [High trust, optional, requires Medium] → DEGRADED →
+SUSPENDED → REVOKED`
 
 | Transition | Guard |
 |---|---|
-| `CLAIMED → OWNERSHIP_VERIFIED` | Wallet signature over challenge nonce matches ERC-8004 token owner, or domain-verification TXT record |
-| `OWNERSHIP_VERIFIED → ENDPOINT_VERIFIED` | Declared endpoint returns 200 on 3 consecutive worker ticks (kills transient-flake false negatives) |
-| `ENDPOINT_VERIFIED → CAPABILITY_VERIFIED` | Marketplace onboarding execution test succeeds — safe, non-capital test invocation per category |
-| `CAPABILITY_VERIFIED → EXECUTION_VERIFIED` | **Listing-type dependent — see below** |
-| `EXECUTION_VERIFIED → COMMERCIAL_VERIFIED` | `commercial_config` well-formed + capital circuit-breaker config present (persistent-service/task only) |
-| `COMMERCIAL_VERIFIED → RISK_REVIEW → APPROVED → LIVE` | Automated risk-tier assignment, then publish |
+| `CLAIMED → OWNERSHIP_VERIFIED` | EIP-712 typed-data signature matches ERC-8004 token owner, or domain-verification TXT record |
+| `OWNERSHIP_VERIFIED → ENDPOINT_VERIFIED` | Declared endpoint returns 200 on 3 consecutive ticks (kills transient-flake false negatives) |
+| `ENDPOINT_VERIFIED → LIVE` (Low trust) | Nothing further required — ownership + live endpoint + registry data is sufficient. Compulsory, not optional; this is the state that kills the original bootstrap deadlock (final-review-docs/01 §4.4). |
+| `LIVE → Medium trust` | Owner opts in; passes the two-stage sandbox test (mainnet-fork, zero real funds) — final-review-docs/01 §6 |
+| `Medium → High trust` | Real, independently-evaluated AACP execution — genuine buyer hire, or owner-self-funded (marketplace funds nothing) — final-review-docs/01 §7 |
 | `LIVE → DEGRADED` | Worker detects endpoint/evaluator/RPC failure on an active Job |
 | `* → SUSPENDED / REVOKED` | Marketplace-initiated (policy violation) or owner-initiated withdrawal |
 
-**Proof requirement is not uniform across listing_type:**
+**Trust tier is a ranking/discovery signal, never a hiring-eligibility gate** — a Low-trust
+agent is fully hireable for real money the moment it reaches `LIVE`. The two real hiring
+gates are tier-independent: the buyer's own stated minimum-trust preference (1.3), and Ring
+3's simulate/broadcast default on custody/settlement actions
+(`00-repo-architecture-and-agent-conventions.md` §6.1).
 
-- **persistent-service, task** (capital-touching): the `EXECUTION_VERIFIED` gate requires
-  either an AACP `PROGRAM`-type verified job (evidence_level L3 while `realGroth16: false`
-  on the deployment we integrate against, auto-upgrading to L4 once real Groth16 enforcement
-  goes live — see 1.7) **or** a marketplace-native execution-verification fallback (our own
-  re-run of the sandboxed test invocation, also logged at L3). AACP is not a hard dependency
-  for going live — its backend host is confirmed (`aacp-backend.termix.live`) but a
-  third-party service is still a single point of failure we don't need to accept for the
-  whole pipeline. What AACP gates instead is the trust-tier ceiling (1.8).
-- **paid-capability** (x402, stateless, no capital exposure): skips the execution-verification
-  gate entirely — `CAPABILITY_VERIFIED → COMMERCIAL_VERIFIED` directly.
+> **⚠ OPEN, not silently resolved.** The old ladder (superseded above) had
+> `EXECUTION_VERIFIED → COMMERCIAL_VERIFIED → RISK_REVIEW → APPROVED` as blocking states
+> where `commercial_config` (max position size, max daily tx count, max slippage,
+> auto-pause threshold) and a risk-tier capital ceiling were set/reviewed. When the ladder
+> was redesigned into Low/Medium/High, these three states were dropped without an explicit
+> decision being made about where their function goes — caught after the fact, not designed
+> out on purpose. Leaning proposal (unconfirmed): `commercial_config` becomes a plain
+> owner-editable field with safe platform defaults, capped by an automatic formula-driven
+> ceiling (category baseline × trust tier) enforced by `custody` at session-grant time — no
+> blocking gate, no manual review step. **This needs an explicit user decision before it's
+> written into final-review-docs** — see that folder's README "not yet reconciled" list.
+
+**Proof requirement is not uniform across listing_type** (still accurate, unaffected by the
+tier redesign):
+
+- **persistent-service, task** (capital-touching): real execution proof is via an AACP
+  `PROGRAM`-type verified job (evidence_level L3 while `realGroth16: false` on the deployment
+  we integrate against, auto-upgrading to L4 once real Groth16 enforcement goes live — see
+  1.7) **or** the marketplace-run sandbox test (final-review-docs/01 §6). AACP is not a hard
+  dependency for going live — its backend host is confirmed
+  (`aacp-backend.termix.live`) but a third-party service is still a single point of failure
+  we don't need to accept for the whole pipeline.
+- **paid-capability** (x402, stateless, no capital exposure): reaches `LIVE` the same way as
+  any other listing type — Low trust needs no execution proof at all.
 - **agent-hires-agent**: inherits whichever underlying flow it wraps.
 
 **History retention on revocation**: `Evidence`/`Performance` are keyed to
@@ -349,12 +370,24 @@ actions instead of forcing AACP.
 
 ## 1.8 Trust-tier gating
 
-| Tier | Unlock condition |
-|---|---|
-| Basic | Listing reached `LIVE`. No execution/outcome evidence required. |
-| Verified | ≥1 `EXECUTION` proof (L3+) in trailing window — either a real hired `PROGRAM` job, or the marketplace-initiated onboarding test job (Decision 0002), so a new agent with no buyer history yet has a real path to this tier |
-| Proven | ≥3 `OUTCOME` evidence records (L3+), confidence above threshold — this is TermiX's Agent Advantage Report qualifying set (≥3 tasks, ≥1 trading/security-adjacent); hitting Proven and passing the TermiX bounty requirement are the same event |
-| Institutional | Proven + ≥1 L6 marketplace-run benchmark **+ multiple AACP-verified executions** (currently L3 while `realGroth16: false` — see Provenance Addendum; a single third-party Evaluator's evaluation, real but not yet cryptographically enforced on the deployment we integrate against, is still one dependency, not fully within our control the way a marketplace-run benchmark is — this gate should be read as "multiple independent AACP evaluations," with the tier's evidentiary strength auto-improving to true L4 the moment `realGroth16` flips true, no schema change needed) + minimum time-in-market (e.g. 30 days continuous RUNNING with no unexplained DEGRADED/ATTENTION_REQUIRED gaps) |
+**Current system** (reconciled 2026-08-24; full detail in
+`docs/final-review-docs/01-ingestion-and-registration-of-agents.md` §5-7 — canonical):
+
+| Tier | What it requires | Compulsory? | What it affects |
+|---|---|---|---|
+| **Low** | Ownership + live endpoint + registry data (1.2) | Yes — this is what `LIVE` means | Base listing, always hireable |
+| **Medium** | Passes the marketplace's own sandbox test — two-stage funnel on a local mainnet fork, zero real funds | No — owner opts in | Badge on Agent Card, `discovery` ranking boost |
+| **High** | Medium, plus independently-evaluated real execution evidence (genuine buyer hire, or owner-self-funded — marketplace funds nothing) | No — requires Medium first | Strongest badge, `discovery` ranking boost |
+
+Tier is a ranking/discovery signal only, never a hiring-eligibility gate — see 1.2's note
+above for the two actual (tier-independent) hiring safety mechanisms.
+
+The old Basic/Verified/Proven/Institutional ladder (including the TermiX Agent Advantage
+Report tie-in at "Proven" and the L6-benchmark/AACP-multi-execution "Institutional" gate) is
+retired. **Not yet re-homed, flagged not dropped**: whether/how the TermiX bounty-qualifying
+benchmark (≥3 tasks, ≥1 trading/security-adjacent, L6) fits as a High-trust evidence source —
+`final-review-docs/01` §7 doesn't currently name it as one of the accepted High-trust paths.
+Needs an explicit decision, not a silent merge, before it's written into the canonical doc.
 
 ---
 
@@ -384,6 +417,11 @@ coerced.
 ---
 
 ## 1.10 Sybil / independence confidence
+
+⚠ SUPERSEDED (mechanics only — the formula/intent below is unchanged, just now fully
+specified): see `docs/final-review-docs/02-fraud-sybil-detection.md` §3 for the exact
+signal computations (wallet-cluster hop-walk, timing z-score, reciprocal-cycle detection),
+the combination formula, and the deferred-threshold list.
 
 `independence_confidence(e) = 1 − suspicion_score`, where suspicion is built from:
 wallet-cluster proximity to the agent's own funding source, review-timing burst detection

@@ -107,20 +107,27 @@ naturally idempotent — no duplicate Evidence rows, no double-counted version t
 
 ---
 
-## 3.2 Onboarding verification pipeline (`apps/worker/verification/`)
+## 3.2 Onboarding verification pipeline
 
-Triggered by the command/state channel (2.3.1) when `apps/web` writes a new Listing row, or
-by 3.1's agentURI-resync detecting a version change:
+**Current mechanism** (reconciled 2026-08-24; full detail in
+`docs/final-review-docs/01-ingestion-and-registration-of-agents.md` — canonical). Package
+paths below use Section 0's current ring architecture, not this file's original
+`apps/worker`/`chain-adapters/aacp` naming.
+
+Triggered by the command/state channel when `apps/web` writes a new Listing row, or by 3.1's
+agentURI-resync detecting a version change:
 
 1. Runs the endpoint-uptime check (1.2's `OWNERSHIP_VERIFIED → ENDPOINT_VERIFIED` guard) —
-   3 consecutive successful ticks, calling the `core-domain/state-machines` guard function
-   with freshly-fetched uptime data (2.4).
-2. Runs the marketplace onboarding execution test — a safe, non-capital test invocation
-   scoped to the Listing's category — and on success writes an Evidence row at L2
-   (`CAPABILITY`, 1.5's table) and drives the guard call for
-   `ENDPOINT_VERIFIED → CAPABILITY_VERIFIED`.
-3. Stops here — `CAPABILITY_VERIFIED → EXECUTION_VERIFIED` is listing-type-dependent (1.2)
-   and, for capital-touching listing types, is owned by 3.3, not this pipeline.
+   3 consecutive successful ticks, calling the `domain` (Ring 0) guard function with
+   freshly-fetched uptime data from `census` (Ring 1).
+2. On success, `listings` (Ring 2) transitions the agent straight to `LIVE` at **Low
+   trust** — no test invocation required at this stage. This is the compulsory floor.
+3. **Optional, owner-triggered, not part of this pipeline's automatic run**: the Medium-trust
+   sandbox test — a two-stage funnel (opportunistic decision-only check, then a mandatory
+   real-action test against a local mainnet fork provisioned in `apps/jobs`) — writes Evidence
+   at `EXECUTION` class once passed. See final-review-docs/01 §6 for the full mechanism,
+   including the honest limit that this can't be made airtight against a deliberately
+   adversarial agent.
 
 ---
 
@@ -164,6 +171,13 @@ below).
    the job as unresolved for evidence purposes, and falls back to the marketplace-native
    verification path (1.2) instead. This is built and tested on testnet from the start (not
    deferred to a pre-mainnet hardening pass) — see Audit Note 6.
+
+   ⚠ SUPERSEDED (scope extension): this guard as written only checks against
+   marketplace-controlled identities, which leaves the owner-funded High-trust path
+   (`docs/final-review-docs/01-ingestion-and-registration-of-agents.md` §7.2) open to owner
+   self-certification. `docs/final-review-docs/02-fraud-sybil-detection.md` §5 extends this
+   same check to the agent owner's identity cluster, reusing the `IdentityLink` table from its
+   §3.1. Additive to this step, not a replacement.
 7. **Scheduled `claimRefund` sweep** (Audit Note 3): a cron in `apps/worker/verification/`
    periodically scans Client- and Provider-role jobs stuck in `Funded`/`Submitted` past their
    deadline and calls `claimRefund` to unlock stake and budget. Without this, a stalled
@@ -208,6 +222,11 @@ is pinned per row so every score stays re-derivable from raw Evidence at any lat
 ---
 
 ## 3.6 Sybil/independence scoring — recomputed at rollup time, not write time
+
+⚠ SUPERSEDED (mechanics only — timing/recomputation behavior below is unchanged and still
+current): see `docs/final-review-docs/02-fraud-sybil-detection.md` for the actual signal
+mechanics (§3), the self-dealing guard extension to owner-controlled identities (§5, closing
+the gap in step 6 below), and the sandbox rate-limit guard (§6).
 
 `independence_confidence` (1.10) is deliberately **not** baked into an Evidence row at write
 time — it's computed by the rollup cron (3.5) against the *current* wallet-cluster/timing/

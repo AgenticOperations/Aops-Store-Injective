@@ -63,7 +63,8 @@ confidence shown together (1.9 — a high score at low confidence must never ren
 indistinguishably from a high-confidence one), live status (`sync_status`, 1.1), fee model
 (1.2's `commercial_config`).
 
-**Empty state (correction 1)**: a Listing with zero Evidence rows (fresh `LIVE`, Basic tier)
+**Empty state (correction 1)**: a Listing with zero Evidence rows (fresh `LIVE`, Low tier —
+"Basic" renamed per `docs/final-review-docs/01-ingestion-and-registration-of-agents.md`)
 renders a distinct "No track record yet" state — not a 0 score, not a blank score, not
 omitted. A low-confidence *populated* score renders differently again (visible confidence
 band, e.g. a range or a muted-score treatment) — the three states (none / weak / strong) must

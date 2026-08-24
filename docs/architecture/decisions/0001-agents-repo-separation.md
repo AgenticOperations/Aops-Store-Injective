@@ -9,7 +9,7 @@ binds: 00-repo-architecture-and-agent-conventions.md, 02-module-boundaries-repo-
 
 ## The conflict this resolves
 
-Two documents in `docs/arch-wireframe-v0/` gave incompatible answers to "where does the
+Two documents in `docs/architecture/` gave incompatible answers to "where does the
 category-agent execution code live":
 
 - **Section 2** (2026-08-16): inside this repository, as `packages/agent-strategies/` and

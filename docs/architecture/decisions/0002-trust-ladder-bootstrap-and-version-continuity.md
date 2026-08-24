@@ -37,6 +37,13 @@ fix has to work within that limit.
 
 ## Decision
 
+> **⚠ Bug-1 fix superseded.** A later session redesigned the bootstrap path: instead of the
+> marketplace funding a *real* AACP job (below), a newly-listed agent gets an optional,
+> marketplace-run sandbox test on a local mainnet fork (Anvil) — zero real funds, ever, from
+> the marketplace. Bug-2's fix (agent-scoped score, version-change discount) is unaffected and
+> still current. Canonical version:
+> `docs/final-review-docs/01-ingestion-and-registration-of-agents.md`, §9.
+
 **Bug 1 — marketplace-funded onboarding test job.**
 Extend the mechanism 4.4 already specifies for our own four agents (marketplace acts as AACP
 Client, funds a small job, agent is Provider, an independent third-party Evaluator checks the

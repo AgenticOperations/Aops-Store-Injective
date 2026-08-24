@@ -513,7 +513,7 @@ Each is a lint rule, not a paragraph. A violation fails the build.
 | *What is this repo, and where does code go?* | `AGENTS.md` at the root, always loaded. Short. Points at everything below. |
 | *How careful must I be in this file?* | The ring, visible in the path and declared in the package's `package.json` |
 | *How do I do this specific recurring thing?* | `.agents/skills/<name>/SKILL.md` — one per task shape |
-| *Why is it like this — may I change it?* | `docs/decisions/*.md`, with `AGENTS.md` mapping which decision binds which package |
+| *Why is it like this — may I change it?* | `docs/architecture/decisions/*.md`, with `AGENTS.md` mapping which decision binds which package |
 
 `AGENTS.md` stays short on purpose. It is loaded into every session; length there is a tax on
 every task. It routes; it does not explain.
@@ -558,7 +558,7 @@ is what actually prevents it.
 
 ### 7.4 Decision records
 
-Decisions with a non-obvious rationale get a record in `docs/decisions/`, and `AGENTS.md` maps
+Decisions with a non-obvious rationale get a record in `docs/architecture/decisions/`, and `AGENTS.md` maps
 each to the packages it binds — so an agent is told *before* editing that a choice here was
 deliberate.
 

@@ -6,16 +6,21 @@ four mandatory categories (rebalancing, grid trading, yield optimization, health
 monitoring), targeting the main track plus the Altana, TermiX, and PancakeSwap partner
 tracks.
 
+See `PRODUCT-STATE.md` for current status, `CLAUDE.md` for how work is organized in this repo.
+
 ## Repo layout
 
-- `docs/arch-wireframe-v0/` — architecture design docs, one file per section, written and
-  verified through the `superpowers:brainstorming` process before any implementation.
-  Section 1 (data model, state machines, proof/rating mechanics, AACP integration) is
-  verified against primary sources (Altana docs, 8004scan Developer Hub, AACP whitepaper).
+- `docs/unverified-ideas-and-flows/` — raw ideas and flows from either collaborator, before
+  any structuring or verification. Nothing here is binding.
+- `docs/architecture/` — structured, verified design docs, one file per section
+  (`00`-`05`), plus `decisions/` for ADRs recording why a given change was made. Written and
+  verified through the `superpowers:brainstorming` process; content can still evolve.
+- `docs/final-review-docs/` — canonical, factually-proven-robust versions of feature docs,
+  headed for actual review. Source of truth for any topic it covers; see its own `README.md`.
 - `docs/agent-chats/` — raw research-chat exports used to seed design work. Gitignored;
   local-only, not build material.
-- `HANDOFF.md` — append-only session log. Every agent session appends what it did before
-  closing; never edit or delete prior entries.
+- `HANDOFF_RYUK.md` / `HANDOFF_KC.md` — append-only, per-collaborator session logs. Every
+  session appends to the file matching whoever drove it; never edit or delete prior entries.
 
 ## Branches
 
@@ -24,4 +29,5 @@ tracks.
 
 ## Status
 
-Pre-build. See `docs/arch-wireframe-v0/` for current design state.
+Pre-build. See `PRODUCT-STATE.md` for the current snapshot, `docs/architecture/` for full
+design detail.
