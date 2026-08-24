@@ -275,3 +275,64 @@ hosting/`aops` CLI, Watcher)
 - Section 6 (Discovery/Ranking) and Section 7 (build phasing) remain not started. `README.md`
   branch-protection note still deferred. No implementation has begun. **File is written but
   not committed** — left on the working tree of `planning/docs` for review first.
+
+## 2026-08-24 — Section 0 written (repository architecture & agent conventions)
+
+- Design discussion, not a research session. User set two framing constraints that drove
+  everything: (1) **this is the production repo — the Sep 9 submission is a checkpoint, not
+  the goal**, and (2) **the repo will be built by coding agents, so it must be fast and
+  unambiguous for an agent to understand.** Constraint (2) is treated as a first-class
+  engineering requirement in the doc, not a documentation nicety.
+- Wrote `docs/arch-wireframe-v0/00-repo-architecture-and-agent-conventions.md`. Numbered `00`
+  deliberately: it precedes Section 1 because it says where code goes and how careful to be.
+- **Primary carve is ownership + reversibility, not feature nouns.** Four rings: Ring 0 pure
+  (no I/O — domain, scoring, metrics) · Ring 1 observation (read-only, output is a cache —
+  agent-registry, census, market-data) · Ring 2 owned state (database, evidence, listings,
+  discovery) · Ring 3 irreversible ⚠ (custody, settlement). Dependencies run downward only.
+  Rationale: a wrong scoring weight is a bug; a wrong `grantSession` is money gone. Carving by
+  feature would put both in one folder and erase the only signal telling an editor how careful
+  to be. 16 packages, 5 apps.
+- **Four decisions taken in the discussion, each recorded in the doc:**
+  1. *Production repo, deadline secondary* — removes the setup-cost objection to fine-grained
+     packages and means Zone-B safety work gets built properly rather than cut.
+  2. *Continuous watch runs as one always-on process, and is deliberately powerless* —
+     `apps/watch` holds chain subscriptions, **detects and enqueues only**, holds no keys, and
+     has no import path to Ring 3 (lint-enforced). Needed because intervention latency is a
+     published KPI (4b.7) and a polling interval would cap a number we ask buyers to judge us
+     on.
+  3. **The four category agents move OUT of this repo entirely** — each becomes an independent
+     deployable with its own wallet, on-chain identity and endpoint, discovered and hired
+     through the same public path a stranger's agent uses. This turns Section 4.0's
+     "no special-cased trust path" from an argument into a checkable fact (no import path
+     exists because the code is not in the tree), and makes us the first third party through
+     our own onboarding flow. Consequence: `strategies` and `market-execution` leave; this
+     repo's irreversible surface shrinks to **two packages**. `metrics/` stays here, because
+     measurement is the marketplace's job and the agent must never compute its own score.
+  4. *One doc, in this repo* — rather than a separate reference doc.
+- **Package rules**: `public/` + `private/` enforced by `package.json` `imports`/`exports` (not
+  importable from outside — module resolution, not convention) · capability names never vendor
+  names (vendor surface is volatile: wallet layer swapped, verification flag pending, DEX
+  shipped a new architecture, lending protocol shipped flash loans — all during design alone)
+  · catalog for shared dep versions · thin transport (four surfaces must enforce the same
+  gates, so guards live in `domain/` and every surface calls the same function) · per-package
+  `keys.ts` failing at boot · colocated tests.
+- **Two invariants the import graph now guarantees**, both lint-enforced: `evidence ✗→ scoring`
+  (so a score can never be baked into an evidence row — 3.6's rollup-time recomputation is only
+  possible because of this), and `apps/watch ✗→ custody|settlement`. Full forbidden-edge list
+  in 6.4.
+- **Ring 3 protocol**: `mode: "simulate" | "broadcast"` with simulate as default · broadcast
+  requires an explicit network assertion so mainnet is a reviewed promotion, never config drift
+  · CODEOWNERS, no auto-merge · fail at boot not at sign · every action produces an evidence
+  record including refusals.
+- Part 7 is the agent-operating section: four context layers (`AGENTS.md` → ring → skills →
+  decision records), a **"I am adding X → it goes in Y" lookup table** (7.2), the six skills to
+  write, and six decision records that must exist because each is a deliberate choice an agent
+  would otherwise reverse in the name of helpfulness.
+- **Deliberately contains no reference to any other codebase** — every rule is justified from
+  this product's own properties, per user instruction.
+- **Six open decisions listed in Part 9, not silently assumed**: web framework choice
+  (unrecorded — earlier design assumed one, current practice points at another) · bootstrap
+  method · whether we need our own on-chain contracts · `web`/`console` one app or two ·
+  how `census` is rate-limited at population scale · where the agents repo lives.
+- **Both files from today (`04b-...` and `00-...`) plus these HANDOFF entries are written but
+  NOT committed** — left on the working tree of `planning/docs` for review.
