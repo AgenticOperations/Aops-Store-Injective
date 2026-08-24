@@ -193,3 +193,85 @@ hosting/`aops` CLI, Watcher)
   hosting ledger/`aops`) are scoped explicitly in 5.8, matching Section 4.7's pattern.
 - Section 6 (build phasing/sequencing) remains not started. `README.md` branch-protection note
   still deferred. No implementation has begun.
+
+## 2026-08-24 — Section 4b written (deep strategy models for the four category agents)
+
+- User asked for a review of the plan (Sections 1–5) against the wider research corpus
+  (`RESEARCH.md`, `HACKATHON-FIRST-PRINCIPLES.md`, `MARKET-RESEARCH.md`, `LEARN-ONE-DAY.md`,
+  `BuildtheERA.md`, `AGENT-ECONOMY.md` — all in the parent `marketplace/` folder, outside this
+  repo), then asked for best-in-market agent designs to replace 4.3's threshold rules.
+- Wrote `docs/arch-wireframe-v0/04b-category-agent-strategy-models.md`. It **supersedes 4.3's
+  decision-rule table only** — 4.2's READ→DECIDE→ACT→RECORD loop, the pure-DECIDE isolation,
+  the Section 1–3 dependency map, and the two-rail custody design are all unchanged and were
+  re-confirmed as correct. Numbered `04b` deliberately, not `06`, so it does not take the
+  Section 6 slot the findings doc reserved for the Discovery Engine.
+- Core finding: three of 4.3's four rules route through `SwapRouter`, making every agent a
+  **taker** (pays the fee, pays price impact, sandwichable). The maker alternative — a
+  one-sided V3 **range order** via `NonfungiblePositionManager` — receives the fee, has no
+  price impact, and has nothing to front-run. This is Charm Alpha Vaults' base+limit design,
+  needs no hooks and no Infinity, works on PancakeSwap V3 today, and **unifies the rebalancer
+  and grid agents onto one adapter surface**. Honest trade-off disclosed in the doc: a range
+  order can un-fill if price crosses back, so fill rate becomes a published KPI.
+- Second finding: 4.3's Rebalancer reads *wallet token split* and swaps to restore a ratio —
+  that is a **portfolio rebalancer**, not an LP-range rebalancer. It never calls
+  `NonfungiblePositionManager`. As specified, the hardest mandated category was not covered at
+  all. This remains the top unspiked risk in the project (also `RESEARCH.md` §10).
+- Third finding: 4.3's health-factor agent says "repay debt or add collateral" — which assumes
+  the user holds spare stablecoins, which a user whose collateral is crashing generally does
+  not. **Verified fix**: Venus has native flash loans on the BNB Chain Core Pool via a Diamond
+  `FlashLoanFacet` (`executeFlashLoan(...)` / `IFlashLoanReceiver.executeOperation(...)`,
+  ~0.09% fee, all vTokens except vBNB), with **self-liquidation and deleveraging named as
+  intended use cases**. That enables atomic collateral-funded deleveraging requiring zero idle
+  capital. Introduces no new custody rail — the flash loan opens and closes inside one tx and
+  the Altana session stays the sole rail per 1.3/4.4.
+- Fourth finding: 4.3's yield rule has no cost term. Break-even on $10k chasing +1% APR is
+  ~110 days (`LEARN-ONE-DAY.md` C2) — the rule loses money while displaying an optimisation.
+  Replaced with a net-of-cost + persistence + utilisation-drift gate, Yearn-v3-style marginal
+  allocation instead of wholesale switching, and a UI that shows the break-even arithmetic
+  **including when the recommendation is "do not move."**
+- Fifth finding: 4.3's grid has no inventory model, which is the known blow-up mode (buys all
+  the way down, shows positive profit-per-trade while the account bleeds). Added the
+  Avellaneda–Stoikov inventory-skew term, a trend-filter suspension, a max-drawdown kill, and
+  a ≤20%-per-level cap.
+- **New primary-source verification this session** (all via `gh api` against contract repos,
+  not docs sites, per this repo's standing discipline):
+  - **PancakeSwap Infinity CLAMM is deployed on BSC mainnet AND testnet (chain 97)** — testnet
+    `clPoolManager 0x36A12c70c9Cf64f24E89ee132BF93Df2DCD199d4`,
+    `clPositionManager 0x77DedB52EC6260daC4011313DBEE09616d30d122`, plus `clQuoter`,
+    `clTickLens`, `vault`; mainnet `clPoolManager 0xa0FfB9c1CE1Fe56963B0321B32E7A0302114058b`.
+    Official CL hooks exist (`limit-order`/`CLLimitOrder.sol`, `dynamic-fee`, `full-range`,
+    `geomean-oracle`, `vecake-exclusive`). Section 3's addendum had confirmed **V3 only**.
+    **Decision [A]: build on V3 anyway** — the strategies need no hooks, V3 holds the deep
+    liquidity, its addresses are already verified, the PancakeSwap-track pitch is a V3 story
+    (retired Position Manager), and `CLLimitOrder` is *not* in Infinity's official deploy
+    scripts so using it means maintaining a hook ourselves. Hedge scoped as Tier 3: mint one
+    Infinity CLAMM position on testnet and surface it.
+  - **`venus-agent-skills` read in full** — carries risk heuristics beyond the HF formula
+    (concentration >70%, borrow liquidity <2× requested, utilisation >85%, +0.10 event
+    buffer), is **simulate-by-default with an explicit `--confirm YES` broadcast guard**, and
+    prescribes user-facing language ("estimated", never "safe for sure"). Notably it
+    **monitors and simulates but does not intervene** on health factor — the sponsor's own
+    reference agent stops at telling you, which is precisely the space our agents occupy.
+  - **Altana's ten production skills contain no V3 range-management skill** (its PancakeSwap
+    Liquidity skill is V2, and V2 pools have no ranges). So both of the two hardest mandated
+    categories have no off-the-shelf path from any sponsor.
+- 4b.8 fills a hole identified in the same review: Section 1.9's `metric_ontology_key` said
+  "or a category-specific KPI" and never defined one — which is exactly where the rubric's
+  *Agent Diversity / equal depth* axis lives. 4b.8 now defines primary/risk/cost/honesty KPIs
+  per category, written through 3.4's existing pipeline with no schema change.
+- 4b.10 tiers the work against the 16 days remaining (submissions close 2026-09-09). Tier 1 is
+  four decision-logic changes plus one real engineering item (V3 range management), which goes
+  first because it is the top risk and still unspiked.
+- **Still open, and raised in the same review but NOT yet addressed in any doc**: (1) Section
+  1.2's state machine has no defined `DISCOVERED → CLAIMED` transition, so nothing from the
+  ~200k BSC agent population can ever reach `LIVE` without its owner acting — there is no
+  liveness/ingestion crawl anywhere in Sections 1–5; (2) the trust ladder deadlocks for
+  third-party agents (Verified needs EXECUTION evidence, which only arrives via being hired or
+  hosted); (3) `version_hash` reset lets a bad agent launder its record by redeploying
+  (GIPS survivorship-bias problem, named in `MARKET-RESEARCH.md` §4a); (4) the L6 benchmark —
+  TermiX's eligibility gate and the top of our own trust stack — exists only as a table row,
+  with no pipeline; (5) no post-hire console, so Altana's explicit "user can see what their
+  agent may do, and revoke it, inside your product" requirement has no design.
+- Section 6 (Discovery/Ranking) and Section 7 (build phasing) remain not started. `README.md`
+  branch-protection note still deferred. No implementation has begun. **File is written but
+  not committed** — left on the working tree of `planning/docs` for review first.
