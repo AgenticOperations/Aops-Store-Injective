@@ -96,9 +96,11 @@ Agent (1) ──< Listing (N) ──< Authorization (N) ──< Job/Service (N) 
 
 One `Agent` may carry multiple `Listing`s (different categories, or different
 `listing_type`s off the same underlying agent). Trust tier and `Performance` are scoped to
-`(agent_id, version_hash, category)` — never globally: a health-factor listing does not
-inherit trust from the same agent's rebalancing track record, since the domain KPIs and
-evidence sets are disjoint.
+`(agent_id, category)` — never globally: a health-factor listing does not inherit trust from
+the same agent's rebalancing track record, since the domain KPIs and evidence sets are
+disjoint. **Not scoped to `version_hash`** — see 1.1 and Decision 0002; `version_hash` is still
+recorded per Evidence row, but a version change discounts trust temporarily rather than
+partitioning it.
 
 ---
 
@@ -111,10 +113,19 @@ Agent-Studio-native agents).
   `declared_services[]`, `category`, `version_hash`, `sync_status`
   (SYNCED/STALE/UNREACHABLE), `last_synced_at`.
 - `version_hash` = hash of (`agentURI` content + declared strategy config for
-  persistent-service agents). The worker re-syncs on interval; when `version_hash` changes,
-  that's a version boundary — prior `Evidence`/`Performance` stay attached to the old hash,
-  and the new version **restarts at Basic trust tier**. A redeploy cannot inherit a prior
-  version's track record.
+  persistent-service agents) — the only thing we can observe, since we never have access to an
+  agent's actual code, only its public manifest. The worker re-syncs on interval; when
+  `version_hash` changes, that's a detected version boundary, recorded on every new Evidence
+  row from that point on.
+- **Version changes do not reset trust (Decision 0002, corrects this doc's original design).**
+  Trust and Performance are scoped to `(agent_id, category)`, not to `version_hash` — a
+  redeploy keeps its accumulated history. What a detected version change *does* trigger: a
+  temporary, fading discount on trust weight (1.9) while the new version is unproven; a
+  transparent note on the Agent Card ("manifest updated on [date], trust confidence
+  temporarily reduced"); and one input signal into sybil/fraud scoring (1.10) if version
+  churn clusters suspiciously around negative Evidence. None of these erase prior history —
+  the original "restarts at Basic" design allowed a bad agent to launder its record via a
+  cosmetic redeploy, which is exactly what this replaces.
 - `declared_capability[]` and `observed_capability[]` are separate arrays, never merged — a
   capability only enters `observed_capability[]` once a `CAPABILITY`-proof Evidence record
   exists for it. Claimed-but-unobserved stays visibly `UNCONFIRMED` on the Agent Card.
@@ -254,6 +265,7 @@ action+wallet+agent+authorization+policy+tx.
 | Self-declared `agentURI` capability | CAPABILITY | L0 | Display-only, never scored |
 | Raw ERC-8004 feedback event | OUTCOME (weak) | L1 | Sybil-discount applies before use (1.10) |
 | Marketplace onboarding execution test | CAPABILITY | L2 | Gates Listing → CAPABILITY_VERIFIED |
+| Marketplace-initiated AACP `PROGRAM` test job (marketplace as Client, agent as Provider, independent Evaluator) | EXECUTION | L3 | New source (Decision 0002) — bootstraps Verified tier for a new agent with no paying buyer yet, using the same Client/Provider pattern 4.4 already specifies for our own agents |
 | AACP `PROGRAM`-type job + Groth16 proof | EXECUTION | **L3** (auto-upgrades to L4 once `realGroth16: true` on the integrated deployment) | Currently not cryptographically enforced on testnet (`GET /api/v1/config` → `realGroth16: false`) — real, independent evaluation today, but not yet a trustless proof |
 | AACP aggregate `reputationScore` (five-factor, ingested periodically) | RELIABILITY | L3 | New source — cross-check against our own computed score |
 | Marketplace-computed domain KPI from on-chain state | OUTCOME | L3–L4 | Computed by worker reading chain state directly |
@@ -340,7 +352,7 @@ actions instead of forcing AACP.
 | Tier | Unlock condition |
 |---|---|
 | Basic | Listing reached `LIVE`. No execution/outcome evidence required. |
-| Verified | ≥1 `EXECUTION` proof (L3+, AACP `PROGRAM` preferred) in trailing window |
+| Verified | ≥1 `EXECUTION` proof (L3+) in trailing window — either a real hired `PROGRAM` job, or the marketplace-initiated onboarding test job (Decision 0002), so a new agent with no buyer history yet has a real path to this tier |
 | Proven | ≥3 `OUTCOME` evidence records (L3+), confidence above threshold — this is TermiX's Agent Advantage Report qualifying set (≥3 tasks, ≥1 trading/security-adjacent); hitting Proven and passing the TermiX bounty requirement are the same event |
 | Institutional | Proven + ≥1 L6 marketplace-run benchmark **+ multiple AACP-verified executions** (currently L3 while `realGroth16: false` — see Provenance Addendum; a single third-party Evaluator's evaluation, real but not yet cryptographically enforced on the deployment we integrate against, is still one dependency, not fully within our control the way a marketplace-run benchmark is — this gate should be read as "multiple independent AACP evaluations," with the tier's evidentiary strength auto-improving to true L4 the moment `realGroth16` flips true, no schema change needed) + minimum time-in-market (e.g. 30 days continuous RUNNING with no unexplained DEGRADED/ATTENTION_REQUIRED gaps) |
 
@@ -355,6 +367,10 @@ weight(e) = source_rank(e.source)          // 0.1 self-attest → 1.0 marketplac
           × independence_confidence(e)     // 1 − sybil-suspicion, see 1.10
           × recency_decay(e.created_at)    // per-category half-life
           × economic_relationship_tier(e)  // NO_INTERACTION..VALIDATOR ladder
+          × version_continuity(e)          // 1.0 normally; fades up from a lower floor for
+                                            // pre-change evidence in the window right after a
+                                            // detected version_hash change (Decision 0002) —
+                                            // never drops to 0, since history isn't erased
 
 score      = Σ(e.normalized_value × weight(e)) / Σ(weight(e))
 confidence = f(sample_size, evidence_level_diversity, Σweight(e))  // saturating; 3×L6 outweighs 400×L0
