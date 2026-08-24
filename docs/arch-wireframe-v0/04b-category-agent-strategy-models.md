@@ -26,6 +26,12 @@ What stays, unchanged and still correct:
 - The Hexagonal / Modular-Monolith boundary (4.2) — `chain-adapters` is still the only place
   an external SDK is imported.
 
+**One thing this document's own references now get wrong, fixed by `docs/decisions/0001-agents-repo-separation.md`:**
+per that decision, the four agents live in a separate repository from the marketplace. Every
+`chain-adapters/*` reference below (4b.6, 4b.10) names a package inside *that* repository, not
+this one — this document's actual content (the DECIDE logic, the contract surfaces, the KPI
+definitions) is unaffected and unchanged by which repo it ships in.
+
 What this document replaces: **4.3's decision-rule table.** Every one of those four rules is a
 threshold check, and 4.5 defended that as "a deliberate scoping choice, not corner-cutting."
 That defence holds for *pipeline isolation* and fails for *economics*. Three of the four rules

@@ -1,12 +1,22 @@
 ---
 created: 2026-08-16
 project: BUILD-BNB — BNB "Build the Era" marketplace
-status: audited against Section 1 object model before writing (see Audit Notes)
+status: SUPERSEDED for repo topology, package tree, and web↔worker communication — see
+  00-repo-architecture-and-agent-conventions.md and docs/decisions/0001-agents-repo-separation.md.
+  This file assumed the four category agents run inside this repository (apps/worker/loops,
+  packages/agent-strategies); Decision 0001 moved them to a separate repository. The
+  guard-placement principle in 2.4 (pure functions, called identically by every surface) is
+  still correct and now lives in Section 0's domain/ package. Kept for history, not as a build
+  reference.
 section: 2 of N — Module Boundaries & Repo Layout
 depends_on: 01-data-model-state-machines.md
 ---
 
 # Section 2 — Module Boundaries & Repo Layout
+
+> **⚠ Superseded.** Do not build against this file's package tree (2.1) or communication design
+> (2.3) — see the status note above. Section 1's data model and state machines, which this
+> section only organizes, are still current.
 
 ## Audit notes (fixes made before this file was written)
 

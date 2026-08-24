@@ -2,13 +2,22 @@
 created: 2026-08-16
 project: BUILD-BNB — BNB "Build the Era" marketplace
 status: reviewed in chat (two passes — architecture-terms draft, then plain-language rewrite
-  per user feedback), approved, written from the approved plain-language version
+  per user feedback), approved, written from the approved plain-language version. 4.3's
+  decision-rule table is SUPERSEDED by 04b-category-agent-strategy-models.md — do not build
+  against 4.3. Everything else here (4.0-4.2, 4.4-4.7) is unchanged and still correct, per
+  4b.0.
 section: 4 of N — Category Agent Execution Architecture
 depends_on: 01-data-model-state-machines.md, 02-module-boundaries-repo-layout.md,
   03-evidence-trust-engine-pipeline.md
 ---
 
 # Section 4 — Category Agent Execution Architecture
+
+> **⚠ 4.3 is superseded.** Its decision-rule table (the threshold checks for each agent) is
+> replaced by `04b-category-agent-strategy-models.md`, which found three of the four rules lose
+> money or don't perform the mandated category at all. Everything else in this file — the
+> READ→DECIDE→ACT→RECORD loop, the pure-DECIDE isolation, the dependency map — is still current
+> and is what 4b builds on.
 
 ## 4.0 Why these agents exist (resolved design question)
 
