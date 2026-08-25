@@ -55,3 +55,38 @@ last unbuilt component**, with every one of its dependencies — especially the 
 engine — ready end-to-end before it's started.
 
 ---
+
+## 2026-08-25 — Proof Engine work, two items assigned to KC
+
+Ryuk's session worked the Proof Engine this round (full write-up:
+`docs/unverified-ideas-and-flows/2026-08-25-proof-engine-ryuk.md` — unverified/exploratory,
+not yet reconciled against `docs/architecture/`, per the repo's split of labor: KC owns
+connecting/syncing E1-E16, Ryuk+AI own Discovery+Proof content). Two concrete items came out of
+it that are yours specifically, since they depend on the actual agents you're building — not
+something we can spec top-down without you:
+
+1. **E5 per-category grading logic.** The on-chain KPI pipeline (`03`§3.4) can read real chain
+   state for each category (PancakeSwap/Venus addresses already confirmed), but has no rule yet
+   for what counts as a *good* outcome — e.g. how close to the target split counts as a pass for
+   the rebalancer, what recovery threshold/timing counts as good for the health-factor monitor,
+   what counts as a clean fill vs a miss for the grid trader, what margin gap justifies a move
+   for the yield optimizer. **This needs to come from you**, since you're building the agents and
+   know what "correct" actually looks like per category — please define it as you frame each
+   agent, don't treat it as separable from the build.
+2. **Sandbox-compatibility is a build requirement, not a post-hoc check.** Every one of the four
+   agents needs to correctly execute under a marketplace-granted session running in
+   `mode: simulate` (Anvil fork of BSC mainnet, `01`§6) — accepting whatever RPC/chain target the
+   session hands it and acting on it exactly as it would for a real job, with zero test-aware
+   branching. Design this in from the start of each agent, not bolted on after. Sandbox trust
+   stays optional/non-blocking for third-party agents generally (`01`§5 unchanged), but for our
+   own four it's a build requirement since the sandbox is now the primary proof mechanism (see
+   next point).
+
+**Also decided this session, so you have the context**: AACP evidence stays capped at L3
+permanently (it's a 3-evaluator panel vote, not a cryptographic proof — confirmed against five
+AACP primary-source doc pages, nothing TEE/zkVM/Groth16-based exists in AACP itself). Because of
+that, **the sandbox — not AACP — is meant to be the primary point of ingestion/proof** for the
+four mandated agents. AACP stays real supplementary evidence, just not the lead mechanism. Full
+reasoning in the linked doc's §5.
+
+---
