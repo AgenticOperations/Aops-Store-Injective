@@ -90,3 +90,50 @@ four mandated agents. AACP stays real supplementary evidence, just not the lead 
 reasoning in the linked doc's §5.
 
 ---
+
+## 2026-08-25 — Discovery Engine + PEAGASIS drafted; a real conflict with your E9 stance, needs your call
+
+Ryuk's session wrote three docs this round, all in `docs/unverified-ideas-and-flows/`,
+unverified/exploratory tier:
+
+1. `2026-08-25-discovery-engine-ryuk.md` — full E8/E9/E10 design. **Deterministic weighted
+   ranking**, matching `architecture/00`'s `discovery/` package contract ("Deterministic")
+   and independently matching what you wrote the same day in
+   `2026-08-25-marketplace-engine-decomposition-kc.md`. E10 Simulate was redesigned mid-session
+   away from a per-buyer Anvil-fork preview (flagged as an unbounded, buyer-traffic-scaling
+   infra cost that duplicates the sandbox's purpose) to reading the buyer's real position and
+   feeding it into the agent's actual `DECIDE` function — no forking needed. This also
+   independently converges with your own E10 description ("a preview of what an agent *would*
+   decide, before any wallet is connected") — good sign the two designs agree here.
+2. `2026-08-25-peagasis-concierge-ryuk.md` — verbatim capture of a conversational-concierge
+   spec (PEAGASIS = "Personalised Agentic Service Infra for the Site"): multi-turn
+   clarification, trust/evidence translation into plain language, 1-click Altana session
+   construction in a chat drawer. Raw capture, kept as-provided per the folder's own
+   don't-edit-others'-content rule, with a reconciliation note attached (stale
+   Basic/Verified/Proven/Institutional tier naming in the worked example; stale
+   `chain-adapters/*` paths that don't exist in the real package tree — should be
+   `agent-registry/` and `custody/`).
+3. `2026-08-25-peagasis-discovery-engine-v2-ryuk.md` — **this is the one that needs your
+   input.** On direct, explicit, repeated instruction this session, PEAGASIS's ranking was
+   redesigned around **semantic/vector search + LLM-driven, dynamic ranking**, specifically
+   *not* the deterministic formula — full NLP support chat, not just a query parser in front
+   of a fixed formula. Retrieval-grounded (LLM only ranks over real `LISTINGS`/`EVIDENCE` rows
+   pulled by vector search, never invents an agent or a trust tier), but the ranking mechanism
+   itself is now non-deterministic by design.
+
+**This directly contradicts what you wrote the same day.** Your decomposition doc says, of E9:
+"a deterministic weighted formula. **Not** embedding similarity. **Not** a learned
+recommender — that is post-hackathon, recorded here so it does not get scope-crept back in."
+`architecture/00-repo-architecture-and-agent-conventions.md` Part 2.1 says the same thing about
+the `discovery/` package itself ("Deterministic"). Ryuk's v2 doc is the one design in the repo
+that disagrees with both of you.
+
+**Not resolved here — flagged for a direct conversation between you two.** Per
+`unverified-ideas-and-flows/README.md`'s own rules, a contradiction sitting in that folder
+isn't a blocker; it's pushed as-is with the conflict stated in-document (v2's §0), not silently
+smoothed over. But it's a real product decision, not a technicality, and it shouldn't get
+implemented either direction until you and Ryuk agree. See v2 doc §0 and §4 for the reasoning
+on both sides (retrieval-grounding as the safety net if semantic ranking is kept; cost/latency/
+non-determinism/prompt-injection risks named explicitly either way).
+
+---
