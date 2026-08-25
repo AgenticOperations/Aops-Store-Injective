@@ -405,3 +405,92 @@ hosting/`aops` CLI, Watcher)
   the proof/evidence engine) is finalized end-to-end. See `HANDOFF_KC.md` for the corresponding
   forward-looking note left for the next session on that side.
 - Committed and pushed to `planning/docs` this session (see commit history for exact hashes).
+
+---
+
+## 2026-08-25 — Note left by KC's session, for Ryuk
+
+First entry written under the amended handoff rule (see below). Read `CLAUDE.md` first if you
+haven't this session — one of its rules changed today.
+
+**What this session produced:** one new Tier-1 doc,
+`docs/unverified-ideas-and-flows/2026-08-25-marketplace-engine-decomposition-kc.md`.
+It is **non-binding and supersedes nothing** — it re-cuts the mechanisms already decided in
+`final-review-docs/01`, `02`, `03` and `architecture/00`–`05` along a second axis: **engines**,
+as units of ownable work, so the two of us can build separate pieces without colliding. It adds
+no mechanism. The one genuinely new thing in it is the axis itself, and the rule that keeps it
+from fighting Section 0: **packages are the carve, engines are the assignment — an engine never
+becomes a folder.** Seventeen engines (E1–E16, E14 split), one whole-system mermaid diagram,
+a per-engine build brief with in/out contracts and hard rules, a parallel-work split, and a
+ten-item table of decisions that block specific engines.
+
+**Five corrections it makes to its own first draft, after review** — recorded because three of
+them are things the canonical docs are right about and a diagram can quietly get wrong:
+
+1. **E14 is two engines, not one.** `01` §10's endpoint-liveness watcher (→ listing state) and
+   `05` §5.6's hosted-tier execution Watcher (→ `RELIABILITY` Evidence on mismatch) have
+   different triggers, outputs, weighting and ship dates. Split into E14a / E14b, E14b marked
+   deferred since hosting is deferred. Note all of E5, E14a, E14b run inside the same
+   `apps/watch` process — that's the two axes doing different jobs, not a contradiction.
+2. **Integrity reads Evidence, not just the chain.** Only wallet-cluster proximity is
+   chain-sourced (`02` §3.1); timing-burst and reciprocal-pair are computed from review records,
+   which live as Evidence rows (`02` §3.2–3.3).
+3. **`02` §5 and §6 are hard gates, not discounts.** Per `02` §8's own effect table the engine
+   has three distinct effect shapes — *discounts weight*, *blocks the Evidence write*, *blocks
+   the sandbox action*. Only the first is soft. Worth guarding against in any future summary.
+4. **High trust is reachable two ways.** `01` §7 names both organic (a real buyer's completed
+   job) and owner-funded showcase. Showing only the second implies High trust is purchasable
+   rather than earnable, which inverts the design.
+5. **Measurement needs the listing, not only the chain.** The chain says what happened; only
+   `LISTINGS` says whose position it is and what category it claimed.
+
+**One real supersession-debt item, for you specifically.**
+`architecture/03` §3.4 still reads as though each category loop writes its own `OUTCOME`
+Evidence — the pre-Decision-0001 mechanism. `final-review-docs/03` §7.1 replaced that this
+morning ("no KPI is ever computed from an agent's self-report… there is no import path from an
+agent to `scoring/`, `evidence/`, or `metrics/`"). `final-review-docs/03` §14's supersession
+record lists three stamps applied; **`architecture/03` §3.4 is not among them, and carries no
+banner** — confirmed by grep on 2026-08-25. Anyone reading `architecture/03` for the
+measurement pipeline currently gets the superseded mechanism. Two-line fix, and exactly the
+failure mode `CLAUDE.md`'s supersession rule exists to prevent. Left for you rather than
+applied here, since it's your supersession record to complete.
+
+**Two open items this session surfaced that aren't in any §12 gap list yet:**
+
+- Whether uptime/degradation history is itself written as `RELIABILITY` Evidence. It's absent
+  from `01` §10 and from `1.5`'s Evidence source table, so today a `DEGRADED` transition changes
+  listing state and leaves no trace in the evidence trail. Uptime is plainly a trust signal;
+  the silence reads as oversight rather than decision.
+- Where the ranking function physically lives. Section 0 puts ranking in `discovery` (R2), but
+  a pure, versioned, exhaustively-testable function has every property of `scoring` (R0).
+  Needs a call before anyone writes it.
+
+**Two disagreements with a review of the doc, recorded so they don't get re-litigated:**
+
+- **E5 is not blocked on a Decision 0001 gap.** A review flagged it as open, citing
+  `architecture/03` §3.4 — the stale doc. `final-review-docs/03` §7.1 decides it outright. Per
+  the final-review README's own rule, once a topic has an entry, `architecture/` stops being the
+  source for it. E5's *actual* open items are narrower: only 1 of 4 category KPI sets is
+  promoted, and the historical-data source (`03` §13.2) is a real cost dependency.
+- **A system map should not go in `final-review-docs/`.** It was proposed there. Five of the
+  engines it names have nothing written at all, so it can't meet that folder's rigor bar; and
+  that folder's rule is that `architecture/` reconciles *toward* it, which would make a map
+  outrank the content docs it summarises. Proposed instead: `architecture/06-system-map.md`,
+  plus an E-number column on `final-review-docs/README.md`'s status table to link the two.
+  Graduates to final-review only when no row reads ❌. Not written yet — your call.
+
+**`CLAUDE.md` changed this session.** The handoff rule was **inverted**: a handoff now goes in
+the file named for whoever it is written *to*, not whoever wrote it. Previously it read "each
+session appends to the file matching whoever is driving that session." This entry is the first
+written under the new rule — KC's session, addressed to you, therefore in `HANDOFF_RYUK.md`.
+`HANDOFF_KC.md`'s existing entry already happened to follow the new convention. Pre-2026-08-24
+entries above are author-keyed self-logs and are explicitly left as-is, not reinterpreted.
+Change is stamped inline in `CLAUDE.md`.
+
+**Not done, deliberately:** nothing committed or pushed this session — the new doc is untracked
+on `planning/docs` and `CLAUDE.md` is modified in the working tree. `PRODUCT-STATE.md` not
+touched, since a non-binding Tier-1 doc changes nothing canonical, in-progress, or gapped.
+
+**Suggested next, in the order it unblocks people:** the `01` §12 `commercial_config` decision
+(it is a product call, not architecture, and the Builder Console is stalled behind it), then
+promoting `04b` §4b.5–4b.7 for the remaining three categories, then the system map.

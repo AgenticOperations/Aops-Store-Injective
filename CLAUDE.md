@@ -58,11 +58,17 @@ The moment a doc's content is superseded by a newer decision, in the **same turn
 Do not defer any of this to "later." Deferring it is exactly the mechanism that caused the
 2026-08-24 three-way trust-tier conflict.
 
-## Handoffs — per person, not shared
+## Handoffs — named for the reader, not the writer
 
-Two append-only logs: `HANDOFF_RYUK.md`, `HANDOFF_KC.md`. Each session appends to the file
-matching whoever is driving that session; never edit or delete prior entries in either file.
-If it's unclear who's driving, ask before appending.
+Two append-only logs: `HANDOFF_RYUK.md`, `HANDOFF_KC.md`. **A handoff goes in the file named
+for whoever it is written *to*** — KC writing for Ryuk appends to `HANDOFF_RYUK.md`; Ryuk
+writing for KC appends to `HANDOFF_KC.md`. Never edit or delete prior entries in either file.
+If it's unclear who the note is for, ask before appending.
+
+> ⚠ **Changed 2026-08-25**, superseding "each session appends to the file matching whoever is
+> driving that session" — which was the reverse. `HANDOFF_KC.md`'s existing entry already
+> follows this rule (written by Ryuk's session, for KC). `HANDOFF_RYUK.md`'s pre-split entries
+> are author-keyed self-logs from before 2026-08-24 and are left as they are, not reinterpreted.
 
 ## Rigor bar for `docs/final-review-docs/`
 
