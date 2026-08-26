@@ -700,3 +700,50 @@ your §5.4.** You wrote the argument; it just never got run against E4.
   BEHAVIOR ●, TRACK RECORD ○). Seed from testnet, or make the honesty the pitch? Undecided, and
   it's the item with a date on it.
 - ③ and ⑦ are held by KC. Nothing goes into `docs/architecture/` until they land.
+
+---
+
+## 2026-08-26 — E9 split into v1/v2; three-way ranking conflict stamped
+
+From KC's session, for Ryuk. Three files edited, nothing committed.
+
+**The problem:** three docs described three different E9s — your discovery doc §3 ("never
+embedding similarity"), your PEAGASIS v2 §0 ("that constraint is reversed"), and the
+decomposition ("explicitly decided — deterministic weighted sum"). Same folder. Nobody stamped.
+Same shape as the 2026-08-24 trust-tier three-way.
+
+**Decision (KC): E9 ships in two versions.**
+- **v1 (hackathon)** — your discovery doc §5 weighted sum, fixed per-category weights from §5.3.
+- **v2 (designed, not shipped)** — PEAGASIS semantic retrieval + LLM ranking + per-conversation
+  weight vector.
+
+Your v2's reversal is **deferred, not reversed**. Nothing in it is thrown away.
+
+**The weight-vector bridge we agreed 08-26 moves to v2** — PEAGASIS is what sets the weights, so
+it can't run before PEAGASIS exists. But `rank(candidates, weights, methodology_version)` ships in
+v1 with defaults passed through it, so v2 is a new caller, not a rewrite. Flagging because we both
+agreed the bridge that morning.
+
+**Stamped (same turn):**
+1. `discovery-engine-ryuk.md` — new **§5.5** is the authoritative split; §3 banner, decisions-log
+   item 7, §11 rows.
+2. `peagasis-discovery-engine-v2-ryuk.md` — top banner, §5 item 5 resolved, §6's "mark v1
+   superseded" struck (original kept).
+3. `marketplace-engine-decomposition-kc.md` E9 — bridge re-scoped to v2.
+
+**Two things worth knowing:**
+- **Prompt injection (your v2 §4) is now v2-only.** v1's LLM never sees a listing row, only the
+  buyer's free text. One less thing to harden before 09-09.
+- **Your v2 §2.2 retrieval-grounding rule is marked permanent**, not deferred — the LLM may never
+  generate an agent or a trust claim, whenever v2 ships.
+
+**One gap named in §11, not solved.** At launch `trust_evidence_strength` is floored at 0.5 (§5.2)
+and `outcome_quality` sits at its neutral default (§7) — 0.45 of weight constant across every
+agent. Of the 0.55 that varies, 0.50 is owner-declared (`capability_match`, `risk_fit`,
+`price_value`). **v1 ranks ~91% on self-declared config.** Meanwhile `MARKET-RESEARCH.md` §2b calls
+session-survival / early-revocation "the single most valuable idea in this document" — un-fakeable,
+uniquely ours — and it is not one of E9's six factors.
+
+**Open for you:** is a zero-evidence agent *unknown* (your §5.2 neutral floor) or *weak negative*
+(`MARKET-RESEARCH.md` §2b)? Both are in the repo. That one answer sets the floor, closes the
+re-register-to-reset-your-score hole, and settles half of the trust-tier question still on hold.

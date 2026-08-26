@@ -481,7 +481,15 @@ rank = w1·capability_match + w2·risk_fit + w3·trust_and_evidence_strength
 > **Filters are conjunctive; ranking is compensatory.**
 
 - **Explicitly decided** — a deterministic **weighted sum**. **Not** embedding similarity. **Not** a learned recommender — that is post-hackathon, recorded here so it does not get scope-crept back in.
-- **Where the weights come from — agreed 2026-08-26 (KC + Ryuk)** — the *formula* stays deterministic and the *weights* become an input. PEAGASIS may set the weight vector per conversation (bounded, clamped, re-normalised so a conversation cannot zero out the trust weight), and the buyer is shown the **literal** weights used, never a paraphrase of them. A machine buyer passes explicit weights or takes category defaults, through the same function. One mechanism, two weight-sourcing paths — so a human and an agent asking the same question cannot get differently-derived answers.
+- **⚠ Changed 2026-08-26 — the bridge below is v2, not v1.** E9 ships in two versions
+  (`2026-08-25-discovery-engine-ryuk.md` §5.5): **v1** is this weighted sum with that doc's §5.3
+  fixed per-category weights and no PEAGASIS; **v2** adds semantic retrieval and the
+  per-conversation weight vector. PEAGASIS is what sets weights per conversation, so the bridge
+  cannot run before it exists. **The function signature ships in v1 either way** —
+  `rank(candidates, weights, methodology_version)`, with v1 passing category defaults — so v2 is a
+  new caller, not a rewrite. Recorded rather than silently re-scoped, because the bullet below was
+  agreed by both collaborators on the same day.
+- **Where the weights come from — agreed 2026-08-26 (KC + Ryuk), v2 mechanism** — the *formula* stays deterministic and the *weights* become an input. PEAGASIS may set the weight vector per conversation (bounded, clamped, re-normalised so a conversation cannot zero out the trust weight), and the buyer is shown the **literal** weights used, never a paraphrase of them. A machine buyer passes explicit weights or takes category defaults, through the same function. One mechanism, two weight-sourcing paths — so a human and an agent asking the same question cannot get differently-derived answers.
 - **The feedback loop is part of this engine, not an afterthought** — view → hire → outcome → review → re-rank. It is what makes ranking quality compound as the marketplace runs.
 - **Genuinely open** — the clamp ranges for conversation-set weights, and the weight-extraction eval that has to sit beside the ranking function's own unit test; **and where the ranking function physically lives.** (Default per-category weight *values* are no longer open — proposed in `2026-08-25-discovery-engine-ryuk.md` §5.3.) Section 0 puts ranking inside `discovery` (R2), but a pure, versioned, exhaustively-testable function has every property of `scoring` (R0). Worth an explicit call before anyone writes it.
 - **Hard rule** — the explanation is generated from the same weights that produced the rank. A decorative "why this agent" string that does not derive from the ranking is worse than none at all.

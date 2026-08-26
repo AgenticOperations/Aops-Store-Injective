@@ -34,6 +34,12 @@ blended trust score. The LLM's only job is turning free text into a structured q
 downstream is algorithmic. A feedback loop (view→hire→outcome→review→re-rank) is required. Every
 design choice below is checked against this constraint, not just inspired by it.
 
+> **⚠ Changed 2026-08-26 — E9 is now explicitly two versions.** This section's constraint
+> (deterministic formula; the LLM confined to query parsing) is **what v1 ships.** The semantic /
+> vector / LLM-ranked mechanism in `2026-08-25-peagasis-discovery-engine-v2-ryuk.md` §2.2 is
+> **v2 — designed, not shipped for the hackathon.** That doc's §0 describes its reversal of this
+> section as live; it is not. See §5.5 for the split and what each version contains.
+
 ## 4. E8 — Discovery
 
 **Input**: buyer free text ("protect my Venus position from liquidation") or direct structured
@@ -136,6 +142,43 @@ recomputes score/confidence → `E9`'s next query reads the fresher `trust_evide
 No ML, no separate "learning" step: it's the same deterministic formula reading live input instead
 of stale input.
 
+### 5.5 v1 / v2 split — decided 2026-08-26
+
+**[NEW]** Recorded here because three documents currently describe three different E9s — this
+doc §3/§5, `2026-08-25-peagasis-discovery-engine-v2-ryuk.md` §0/§2.2, and
+`2026-08-25-marketplace-engine-decomposition-kc.md` E9. This section is the reconciliation.
+
+| | **v1 — ships for the hackathon** | **v2 — designed, not shipped** |
+|---|---|---|
+| Retrieval | deterministic filter over `LISTINGS` (§4) | + pgvector semantic index over `LISTINGS`, re-embedded off E16, top-N + hard filters |
+| Ranking | the weighted sum in §5, **fixed per-category weights from §5.3** | same weighted sum; weights set per conversation by PEAGASIS, bounded/clamped/re-normalised |
+| Determinism | **guaranteed** — same query + same `(weights, methodology_version)` returns the same order | deterministic *given* a weight vector; the vector varies per conversation |
+| LLM role | free-text → structured query (§4) only | + weight extraction, + narration over retrieved rows |
+
+**What does not change between versions, and is built into v1 so there is no migration:**
+
+- The ranking function takes **weights as an input parameter**, never as a constant. v1 only ever
+  passes §5.3's category defaults through it; v2 passes a conversation-derived vector through the
+  same signature. One function, two weight-sourcing paths, from day one. A machine buyer takes the
+  same path with explicit weights or category defaults — so a human and an agent asking the same
+  question cannot get differently-derived answers.
+- The buyer is shown the **literal** weights used, never a paraphrase.
+- **Filters are conjunctive; ranking is compensatory.** Conjunctive logic lives in E8's filters and
+  E12's gate, never in the rank.
+- **Facts are never LLM-generated in either version.** E6's score/confidence stays deterministic and
+  re-derivable; the LLM narrates it, never invents it.
+
+**Why v1 is the deterministic one.** v2's own §4 accepts non-determinism as a property — two buyers
+with identical input can get different orderings. That is defensible for a conversational surface
+and indefensible as the *only* ranking a marketplace has on day one: it cannot be unit-tested
+against fixed inputs (§9), it cannot honour the explanation-derives-from-the-weights rule, and a
+ranking that changes between page loads is not something a buyer moving real money can audit.
+
+**One security surface this split removes from v1 entirely.** v2 §4 flags prompt injection via
+seller-authored listing text reaching the LLM's context. In v1 the LLM never sees a listing row —
+only the buyer's own free text — so that surface does not exist until v2 opens it. It stays a
+v2 build requirement, not a v1 one.
+
 ## 6. E10 — Compare + Simulate
 
 ### 6.1 Compare
@@ -225,6 +268,15 @@ already uses) — it does not create a new chain-adapter dependency.
    mid-session as scaling with buyer traffic rather than agent count (§6.2). Supersedes the
    original async/rate-limited fork design entirely — there is no forked infrastructure left to
    rate-limit.
+7. **E9 ships in two versions — decided 2026-08-26 (KC).** v1 is this doc's deterministic weighted
+   sum with the fixed per-category weights of §5.3; the PEAGASIS semantic/LLM-ranked mechanism is
+   **v2, designed but not shipped for the hackathon**. Full split in §5.5. This **reverses**
+   `2026-08-25-peagasis-discovery-engine-v2-ryuk.md` §0's claim that the deterministic constraint is
+   "reversed for PEAGASIS" — it is *deferred*, not reversed — and voids that doc's §6 instruction to
+   mark this doc's formula sections superseded. It also moves the **weight-vector bridge** agreed
+   2026-08-26 (KC + Ryuk) into v2: PEAGASIS is what sets weights per conversation, so the bridge
+   cannot run without it. The *function signature* ships in v1 regardless (§5.5), so nothing is
+   rebuilt later.
 
 ## 11. Open items — genuinely undecided, not solved here
 
@@ -234,6 +286,8 @@ already uses) — it does not create a new chain-adapter dependency.
 | Package/service placement for E8/E9/E10 | Confirmable at implementation time, consistent with how `05`§5.5 scoped comparable placement decisions |
 | Whether rebalancing/yield-optimization ever need their own weight overrides | Deferred — start flat, revisit once real usage data exists |
 | KC's per-category E5 grading logic | Owned by KC (Proof Engine doc §9) — E9 doesn't block on it, just degrades gracefully until it lands |
+| Clamp ranges for conversation-set weights | **Now a v2 item, not v1** (§5.5) — v1 passes fixed defaults, so there is nothing to clamp until PEAGASIS sets weights |
+| **Whether v1 ships with any un-fakeable ranking factor at all** | **Open gap, created by this split.** With `trust_evidence_strength` floored at 0.5 (§5.2) and `outcome_quality` at its neutral default (§7), 0.45 of total weight is constant across every agent at launch — and of the 0.55 that varies, 0.50 is owner-declared (`capability_match`, `risk_fit`, `price_value`). v1 therefore ranks almost entirely on self-declared config. `MARKET-RESEARCH.md` §2b names the un-fakeable signal we already own and do not use — session survival / early revocation. Not resolved here; named so it is not lost |
 
 ## 12. Next step
 

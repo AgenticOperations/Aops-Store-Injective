@@ -5,6 +5,20 @@ Author: Ryuk. Supersedes the ranking mechanism (not the rest) of
 `2026-08-25-peagasis-concierge-ryuk.md`. Unverified/exploratory tier — not yet reconciled
 against `docs/architecture/`.
 
+> **⚠ SUPERSEDED IN PART — 2026-08-26 (KC).** This document is **v2: designed, not shipped for
+> the hackathon.** §0 below states that v1's deterministic-formula constraint is "reversed for
+> PEAGASIS." That is now **deferred, not reversed** — v1 ships the deterministic weighted sum from
+> `2026-08-25-discovery-engine-ryuk.md` §5 with the fixed per-category weights of its §5.3, and
+> everything in this document (§2.1 semantic retrieval, §2.2 LLM ranking, §2.3 orchestrator,
+> §2.4 recommendations) is v2. The authoritative split is that doc's **§5.5**; this file is the
+> v2 column of it. §5 item 5 and §6 below are corrected accordingly.
+>
+> Two things here are **not** deferred and remain live: §2.2's retrieval-grounded discipline (the
+> LLM may only reason over real retrieved rows, never generate an agent or a trust claim) is a
+> permanent rule for whenever v2 ships; and §4's prompt-injection concern is a **v2 build
+> requirement** — v1's LLM never sees a listing row, only the buyer's own free text, so that
+> surface does not exist until this document ships.
+
 ## 0. What changed from v1, and why it's written down explicitly
 
 The prior Discovery Engine doc locked ranking to a deterministic weighted formula and
@@ -161,11 +175,20 @@ PEAGASIS surface (2.5), independent of whether a discovery conversation is activ
 | 2 | Buyer-profile schema (what's actually stored for personalization) | Not yet designed |
 | 3 | Prompt-injection delimiting approach in the wrapper (2.6) | Needs a concrete pattern before build |
 | 4 | Dashboard/agent-management PEAGASIS integration | Confirmed future scope, not designed |
-| 5 | Reconciling this doc with `2026-08-25-discovery-engine-ryuk.md` into one canonical doc | Pending — that doc's E9 weighted-formula section is now superseded by §2.2 here |
+| 5 | Reconciling this doc with `2026-08-25-discovery-engine-ryuk.md` into one canonical doc | **Resolved 2026-08-26** — not one doc, two versions. That doc §5.5 is the split: its §5 formula is **v1**, this file is **v2**. Its weighted-formula section is **not** superseded |
 
 ## 6. Next step
 
-This is still unverified-tier. Once confirmed, the deterministic-formula sections of
+> **⚠ Changed 2026-08-26 (KC)** — the instruction below is **void**. The deterministic-formula
+> sections of `2026-08-25-discovery-engine-ryuk.md` are **not** superseded; they are what v1
+> ships. This doc does not become the live reference — it becomes the v2 column of that doc's
+> §5.5. Original text kept below as the record of the earlier intent.
+
+~~This is still unverified-tier. Once confirmed, the deterministic-formula sections of
 `2026-08-25-discovery-engine-ryuk.md` should be marked superseded (not deleted — kept as a
 record of the earlier approach and why it changed) and this doc becomes the live reference for
-Discovery/Ranking going forward.
+Discovery/Ranking going forward.~~
+
+**Actual next step:** v2 is unblocked only after v1 ranking ships and the two open v1 items in
+`2026-08-25-discovery-engine-ryuk.md` §11 are answered — the clamp ranges (meaningless until
+PEAGASIS sets weights) and whether v1 ships with any un-fakeable ranking factor at all.
