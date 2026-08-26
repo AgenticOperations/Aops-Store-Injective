@@ -463,13 +463,27 @@ independence_confidence = 1 − suspicion
 - **Canonical** — ❌ **nothing written.** Shape agreed in the findings doc §3.
 
 ```
-rank = capability_match × risk_fit × trust_and_evidence_strength
-     × outcome_quality × price_value × availability
+rank = w1·capability_match + w2·risk_fit + w3·trust_and_evidence_strength
+     + w4·outcome_quality + w5·price_value + w6·availability
 ```
 
-- **Explicitly decided** — a deterministic weighted formula. **Not** embedding similarity. **Not** a learned recommender — that is post-hackathon, recorded here so it does not get scope-crept back in.
+> **⚠ Changed 2026-08-26**, superseding the **product** form this document originally carried
+> (`capability_match × risk_fit × … × availability`). The weighted sum above is
+> `2026-08-25-discovery-engine-ryuk.md` §5's formula, adopted verbatim. Recorded rather than
+> silently swapped, because the product form was wrong in three separate ways:
+> a bare product has **nowhere to put weights**, so that doc's §5.3 per-category overrides and
+> the per-conversation weight vector agreed for PEAGASIS are both inexpressible in it;
+> **any single zero factor annihilates the entire rank**, which contradicts §5.2's zero-evidence
+> floor whose whole purpose is "unknown, not bad"; and product terms are not additively
+> decomposable, so the hard rule below — the explanation derives from the weights that produced
+> the rank — cannot be honoured. Conjunctive "all of these must hold" logic belongs in **filters**
+> (E8's category scoping and `availability_required`, E12's trust-tier gate), never in the rank.
+> **Filters are conjunctive; ranking is compensatory.**
+
+- **Explicitly decided** — a deterministic **weighted sum**. **Not** embedding similarity. **Not** a learned recommender — that is post-hackathon, recorded here so it does not get scope-crept back in.
+- **Where the weights come from — agreed 2026-08-26 (KC + Ryuk)** — the *formula* stays deterministic and the *weights* become an input. PEAGASIS may set the weight vector per conversation (bounded, clamped, re-normalised so a conversation cannot zero out the trust weight), and the buyer is shown the **literal** weights used, never a paraphrase of them. A machine buyer passes explicit weights or takes category defaults, through the same function. One mechanism, two weight-sourcing paths — so a human and an agent asking the same question cannot get differently-derived answers.
 - **The feedback loop is part of this engine, not an afterthought** — view → hire → outcome → review → re-rank. It is what makes ranking quality compound as the marketplace runs.
-- **Genuinely open** — the weight values; **and where the ranking function physically lives.** Section 0 puts ranking inside `discovery` (R2), but a pure, versioned, exhaustively-testable function has every property of `scoring` (R0). Worth an explicit call before anyone writes it.
+- **Genuinely open** — the clamp ranges for conversation-set weights, and the weight-extraction eval that has to sit beside the ranking function's own unit test; **and where the ranking function physically lives.** (Default per-category weight *values* are no longer open — proposed in `2026-08-25-discovery-engine-ryuk.md` §5.3.) Section 0 puts ranking inside `discovery` (R2), but a pure, versioned, exhaustively-testable function has every property of `scoring` (R0). Worth an explicit call before anyone writes it.
 - **Hard rule** — the explanation is generated from the same weights that produced the rank. A decorative "why this agent" string that does not derive from the ranking is worse than none at all.
 
 #### E10 · Comparison & Simulation Engine

@@ -494,3 +494,125 @@ touched, since a non-binding Tier-1 doc changes nothing canonical, in-progress, 
 **Suggested next, in the order it unblocks people:** the `01` §12 `commercial_config` decision
 (it is a product call, not architecture, and the Builder Console is stalled behind it), then
 promoting `04b` §4b.5–4b.7 for the remaining three categories, then the system map.
+
+---
+
+## 2026-08-26 — E11 Risk & Permission researched against primary sources; three of your concierge doc's assumptions don't hold
+
+KC's session. Transaction pipeline started, E11 first. One new doc:
+`docs/unverified-ideas-and-flows/2026-08-25-e11-risk-permission-engine-research-kc.md`.
+
+Everything tagged `[V]` in it was fetched live via `curl` on 2026-08-25 — `docs.altana.network/
+llms-full.txt` (206 KB, `@altananetwork/sdk` 0.7.1) and four BNB Agent Studio pages — per
+`CLAUDE.md`'s "don't invent Altana/AgentCore behaviour, verify against primary sources, not
+WebFetch summaries" rule. Those `[V]` items are constraints, not proposals.
+
+**The headline, because it resolves Open Gap #1 in a direction nobody expected.** An Altana
+session enforces exactly three things: `calls` (contract + method *signature*), `spend` (per-token
+rolling cap), `expiry`. That is the entire grammar. Against our own `commercial_config`: **max
+position size** is only boundable in aggregate, and **max daily tx count**, **max slippage** and
+**auto-pause threshold** have *no on-chain representation at all* — no count primitive exists,
+`calls` never matches argument values, and sessions are static from grant to expiry. So `01`
+§12's leaning proposal ("ceiling enforced by `custody` at session-grant time") works **only for
+the capital ceiling**. The other three are marketplace policy, not guarantees, and the product
+has to stop rendering them as the same kind of thing.
+
+### Three things in your docs that need changing before the hire card is built
+
+Not blocking your work generally — but all three are in the path between PEAGASIS and `custody`,
+so they're worth reading before that surface is built rather than after.
+
+1. **`2026-08-25-peagasis-concierge-ryuk.md`, Session Builder row — the signing model doesn't
+   exist.** The row says "unsigned EIP-712 session grant payload for **browser-wallet
+   signature**", and the diagram's "1-Click Signature" assumes a MetaMask-shaped flow. Altana's
+   own error docs, verbatim: *"Injected wallet signers (e.g. MetaMask) need to sign a transaction
+   but the current build of `@altananetwork/sdk` doesn't accept them as a signer type."* Supported
+   signers are `signerFromPrivateKey`, `createPrivateKeySigner`, `createPasskey`,
+   `createHeadlessPasskey`. `grantSession` is a userOp through the Altana relay signed by the
+   wallet's **admin** signer — not typed data handed to a wallet. The viable non-custodial browser
+   path is `createPasskeyWallet` (WebAuthn, Face ID / Touch ID, browser-only, key never leaves
+   secure hardware). Consequence nobody has costed: **the buyer cannot hire with their existing
+   MetaMask wallet or its funds** — they create and fund an Altana wallet as part of the flow, and
+   since `createWallet` is counterfactual and `grantSession` pays a Keystore registration fee
+   (**doubled on a fresh wallet's first admin action**), the real sequence is *create → fund gas →
+   fund capital → grant*. "1-Click" is one click at the end of three steps.
+2. **"max 300 USDC" in your worked example is underspecified, and the safe reading may be
+   inexpressible.** `SpendPermission` **requires** a period — there is no lifetime-total primitive.
+   "max 300 USDC" on a 7-day session compiles to `{limit: 300, period: "day"}`, which authorises
+   **up to 2,100 USDC**, 7× what the buyer thinks they agreed. Every `period` value in Altana's
+   entire doc set is `"day"` or `"hour"`; no `"week"`, `"month"` or numeric. **[GAP]** — the full
+   enum isn't documented and needs one SDK-type check; if `"week"` exists the problem mostly goes
+   away, if not the only way to bound a total is to shorten the expiry to one period. Separately:
+   **USDC is 18 decimals on BNB**, not 6 — `300_000_000n` caps at 0.0000000003 USDC and the agent
+   silently does nothing.
+3. **Your Venus worked example conflates the two enforcement layers in one card.** "Venus" →
+   `calls` ✅ enforced. "max 300 USDC" → `spend` ✅ enforced. **"HF 1.35" → nothing.** It's agent
+   config; the session permits a repay at 1.10 exactly as readily. All three are then shown under
+   *"Review the session permissions below."* Same for "allowable drawdown" in the clarification
+   prompt. This is the clearest concrete instance of the Layer A / Layer B split the E11 doc
+   argues for — enforced and unenforced fields must be **visually distinct** in the hire card.
+   Minor: *"(recommended: ≥1.30)"* carries the same Venus threshold attribution error already
+   flagged against `architecture/04` — don't propagate it into buyer-facing copy.
+
+Your own reconciliation note already catches the other two (`chain-adapters/altana` should be
+`custody/`; Basic/Verified/Proven/Institutional → Low/Medium/High). Nothing to add there.
+
+### Four decisions sitting with KC — do not build the hire card against a guess
+
+1. **Buyer auth = passkey wallet.** Reads as forced rather than chosen (only non-custodial browser
+   path the SDK supports), but it means accepting a fund-a-new-wallet step inside hiring.
+2. **Topology T1 vs T2** (E11 doc §4.2) — one buyer wallet with a session per agent, vs. a
+   dedicated wallet per hire. Passkey shifts this: you're creating a wallet in the flow either
+   way, so **T2 got much cheaper to justify**, and it makes "this agent cannot touch your
+   principal" unconditional rather than cap-conditional.
+3. **The `period` question** — shorten expiry to bound totals, or accept per-period caps and say
+   so plainly. Needs the enum check first.
+4. **Layer A / Layer B rendering rule** in the hire card.
+
+### Recorded as agreed, from your reply
+
+E9 takes the **weight-vector bridge** — deterministic formula unchanged, PEAGASIS sets weights per
+conversation (bounded, clamped, re-normalised), buyer sees the *literal* weights used, machine
+buyers pass explicit weights or take category defaults through the same function. Also agreed and
+not re-opened: the custody rule (**belongs in `00` §6.4 as a named forbidden edge** — not yet
+written, nobody has done it), narration-engine reframe + TermiX report generator,
+structured-fields-only narration, mandatory deterministic fallback, designed out-of-category
+scoping response, E14→E15 into the PEAGASIS widget, voice input cut, cross-session personalisation
+deferred. Name deferred, not decided.
+
+Two gaps you named on the bridge that KC's proposal did not, carried forward as real work:
+**weight clamping/re-normalisation** (a conversation must not be able to zero the trust weight),
+and **weight-extraction eval** as a second test surface beside the pure ranking unit test.
+
+**One error to fix either way:** `2026-08-25-marketplace-engine-decomposition-kc.md` §5.3 writes
+the rank as a **product** (`capability_match × risk_fit × …`); your `discovery-engine-ryuk.md` §5
+writes a weighted **sum**. Not the same function — under the product form any single zero factor
+zeroes the whole rank, which collides with your own zero-evidence floor (§5.2). **Yours is right,
+KC's is wrong.** Unstamped as of this entry.
+
+### Safe to start now vs. blocked
+
+- **Safe now** — retrieval (pgvector over `LISTINGS`, re-embedded off E16, top-N + hard filters).
+  It survives every open question above untouched, and with a pinned embedding model and fixed
+  index snapshot it stays reproducible, so it doesn't strain Section 0's `discovery/`
+  "Deterministic" contract. Also safe: the narration engine over numeric/enum evidence fields.
+- **Blocked** — the hire card / session-scope surface, on decisions 1–4 above.
+
+**Not done, deliberately:** nothing committed or pushed. The E11 doc is untracked on
+`planning/docs`; this entry is the only edit to a tracked file. `PRODUCT-STATE.md` not touched —
+the E11 doc is Tier-1 non-binding and changes nothing canonical yet. **No supersession banners
+stamped** on `architecture/01` §1.3/§1.4 (§2.3 and §2.5 of the E11 doc show both lines are wrong:
+sub-delegation does not exist, and session scope is immutable at grant) — deliberately deferred,
+because `CLAUDE.md` wants the stamp in the same turn as the *decision*, and decisions 1–4 aren't
+made yet. Flagged here so it isn't lost.
+
+**Update, same session (2026-08-26):** the product-vs-sum error above is now **fixed, not just
+flagged.** `2026-08-25-marketplace-engine-decomposition-kc.md` E9 carries your weighted sum from
+`2026-08-25-discovery-engine-ryuk.md` §5 verbatim, with a `⚠ Changed 2026-08-26` note recording
+what it replaced and why (no weights expressible in a product; one zero factor annihilates the
+rank, against your §5.2 floor; product terms aren't additively decomposable, so the
+explanation-derives-from-weights rule can't hold). Added alongside it: the weight-vector bridge as
+agreed, and the rule **filters are conjunctive, ranking is compensatory** — conjunctive logic
+lives in E8's category/availability filters and E12's tier gate, never in the rank. E9's "genuinely
+open" list narrowed to the clamp ranges, the weight-extraction eval, and where the function lives;
+default per-category weight values now point at your §5.3 rather than reading as undecided.
