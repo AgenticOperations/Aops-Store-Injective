@@ -616,3 +616,87 @@ agreed, and the rule **filters are conjunctive, ranking is compensatory** — co
 lives in E8's category/availability filters and E12's tier gate, never in the rank. E9's "genuinely
 open" list narrowed to the clamp ranges, the weight-extraction eval, and where the function lives;
 default per-category weight values now point at your §5.3 rather than reading as undecided.
+
+---
+
+## 2026-08-26 — Proof pipeline stress-tested against the decomposition; E4 is out
+
+From KC's session, for Ryuk. Checked `2026-08-25-proof-engine-ryuk.md` against the decomposition,
+`architecture/01` §1.5, `architecture/03`, `final-review-docs/01`, and raw EIP-8004 spec text.
+Nothing committed. No stamps applied yet.
+
+### The one thing that moves everything
+
+**E4 is out.** KC is proposing that ruled third-party attestation not required. Only E3 and E5 produce evidence now,
+and we own both — so no tier can honestly mean "independently verified."
+
+This came from your own §4: AACP is a panel vote on a submitted deliverable, and §4 says runtime-
+financial agents have no "after" to gate and no deliverable but their own log. **Your §4 killed
+your §5.4.** You wrote the argument; it just never got run against E4.
+
+### Rulings
+
+| # | Finding | Ruling |
+|---|---|---|
+| ① | `realGroth16` L3-cap (yours) vs auto-upgrade (3 other docs) | Platform gates all upgrades. No vendor live-read |
+| ② | Sandbox "primary" but called "a weak badge" | Primary = sequence, not strength. Level below |
+| ③ | Sandbox compat is both "zero code changes" and "a build requirement" | **Open** — KC's hold |
+| ④ | AACP needs the log-submission §4 rules out | Third-party execution not required. E4 out |
+| ⑤ | E5 has no subject | Binding valid; attribution model **open** |
+| ⑥ | Own-agent showcase breaks invariant #8 | Not required. #8 stands |
+| ⑦ | Tier ranks cooperation, publishes it as trust | **Open** — whole model |
+
+### Three places your doc is now wrong
+
+1. **§5.3 "data plumbing."** It isn't — plumbing implies the data exists. E2 verifies the ERC-721
+   *owner*, not the address holding the position. It's an attribution model, and calling it
+   plumbing is why it stayed unassigned. Spec check helps you though: `agentWallet` is reserved,
+   needs EIP-712/ERC-1271 proof — a real binding. Holes: it's a *payments* field, `unsetAgentWallet`
+   is owner-callable, and it clears on transfer.
+2. **§6 differentiator dies with E4.** "Protocol-assigned evaluator beats ERC-8004's owner-picked
+   one" was right (spec confirms `validationRequest(address validatorAddress,…)` is caller-chosen)
+   — but we no longer use AACP's evaluator, so **we have no answer to the critique we levelled at
+   ERC-8004.** Biggest hole opened this session.
+3. **§5.2 "primary" named a sequence, not a level.** Meanwhile `arch/01:288` prices sandbox at L2
+   and AACP at L3 — our primary path priced below our supplementary one.
+
+### Proposals (KC's, not adopted — want your review)
+
+- **②** Evidence level = *how hard to fake*. Stage 0 → L1. Stage 1 → **L2 now, L3 once the rubric
+  hits a bar** (≥3 scenarios, mild/severe/edge, graded on outcome). Capped at L3 because it's
+  fork-detectable — not because we ran it. Level is a property of the **row**, not the engine.
+- **③** Split E3 into `HARNESS RESULT` (accepted the injected RPC? PASS/NOT_COMPATIBLE) and
+  `BEHAVIOR RESULT` (only on a pass). Conformance failure can't be reported as incapability. The
+  harness result then *is* the third-party contract — your §8 item 5 for free.
+- **⑤b** Attribution in three tiers: **T1 session-attributed** (we issue it, unforgeable, covers
+  every hire) → **this replaces the §6 differentiator**; **T2 `agentWallet`** — index `MetadataSet`
+  events, don't poll, so `unset` ends a window visibly instead of erasing one, and emit
+  `binding_revoked` as an E7 signal; **T3 observed** — display only.
+- **⑦** Drop the tier scalar for three orthogonal facts: `IDENTITY` / `BEHAVIOR` / `TRACK RECORD`.
+  Always all three, including empty. No aggregate, no "2 of 3" — a count is a ladder. Each row
+  carries its own limit. Your §2 KYA principle, finally decided instead of restated.
+
+### Weaknesses KC already found in KC's proposals
+
+- "NOT_COMPATIBLE never lowers rank" is arithmetically impossible. Real claim: it costs the *same*
+  as never attempting, no more.
+- ⑦ only works because of your weight-vector bridge — buyer sees the literal weights, so the
+  ordering is attached to the query, not asserted as a property of the agent. Cut the bridge and ⑦
+  collapses.
+- T1 measures the agent *under our session caps* — not free-running performance. Needs a label.
+
+### Owed stamps (① ④ ⑥ are decided, so these are overdue)
+
+1. `architecture/03` Audit Note 5 + `architecture/01:290` still encode the live-flag auto-upgrade.
+2. `architecture/03` §3.3 — whole AACP pipeline orphaned by ④. Delete or defer, not silently.
+3. Your §5.4 + §6 need ④'s consequence recorded.
+4. Carried over: `architecture/03` §3.4, superseded by `final-review-docs/03` §7.1.
+
+### From you
+
+- **Try to break your own §4.** All of ④ rests on it. If it's wrong, E4 comes back.
+- **Argue against T1 as the §6 replacement** — is it actually stronger, or just the one we have left?
+- **Demo cold-start:** on 2026-09-09 all four of our agents render identical cards (IDENTITY ●,
+  BEHAVIOR ●, TRACK RECORD ○). Seed from testnet, or make the honesty the pitch? Undecided, and
+  it's the item with a date on it.
+- ③ and ⑦ are held by KC. Nothing goes into `docs/architecture/` until they land.
