@@ -1,5 +1,5 @@
 import { OpenAPIHono } from '@hono/zod-openapi'
-import { healthRoute, healthHandler } from './routes/health'
+import { healthHandler, healthRoute } from './routes/health'
 
 /**
  * One zod schema per route is simultaneously the validator, the TypeScript type, and the

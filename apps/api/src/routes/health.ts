@@ -7,7 +7,10 @@ export const healthRoute = createRoute({
   method: 'get',
   path: '/v1/health',
   responses: {
-    200: { content: { 'application/json': { schema: HealthResponse } }, description: 'Service is up' },
+    200: {
+      content: { 'application/json': { schema: HealthResponse } },
+      description: 'Service is up',
+    },
   },
 })
 

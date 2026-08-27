@@ -8,20 +8,10 @@
       }
     ],
     "moduleResolution": "bundler",
-    "types": [
-      "node",
-      "react"
-    ],
+    "types": ["node", "react"],
     "allowJs": true,
     "incremental": true
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "next-env.d.ts",
-    ".next/types/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "next-env.d.ts", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }

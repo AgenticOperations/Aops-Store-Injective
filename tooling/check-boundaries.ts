@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { dirname, join } from 'node:path'
 /**
  * Forbidden-edge check — `docs/architecture/00-repo-architecture-and-agent-conventions.md` §6.4.
  *
@@ -15,12 +16,21 @@
  *   Ring N                    X->  Ring > N
  */
 import { Glob } from 'bun'
-import { dirname, join } from 'node:path'
 
 type Ring = 0 | 1 | 2 | 3 | 'shared' | 'app'
-interface Manifest { name: string; ring: Ring; dir: string; deps: string[] }
+interface Manifest {
+  name: string
+  ring: Ring
+  dir: string
+  deps: string[]
+}
 
-const SHARED = new Set(['@repo/design-system', '@repo/observability', '@repo/utils', '@repo/typescript-config'])
+const SHARED = new Set([
+  '@repo/design-system',
+  '@repo/observability',
+  '@repo/utils',
+  '@repo/typescript-config',
+])
 
 const manifests: Manifest[] = []
 for await (const file of new Glob('{packages,apps}/*/package.json').scan('.')) {
@@ -52,11 +62,21 @@ function checkEdge(from: Manifest, to: string, where: string) {
 
   // evidence X-> scoring
   if (from.name === '@repo/evidence' && to === '@repo/scoring')
-    return fail(from.name, to, 'evidence may not import scoring — this is what keeps every score re-derivable (§6.2)', where)
+    return fail(
+      from.name,
+      to,
+      'evidence may not import scoring — this is what keeps every score re-derivable (§6.2)',
+      where,
+    )
 
   // apps/watch X-> custody | settlement
   if (from.name === '@app/watch' && (to === '@repo/custody' || to === '@repo/settlement'))
-    return fail(from.name, to, 'the watcher detects and enqueues; it has no path to Ring 3 (§5.1)', where)
+    return fail(
+      from.name,
+      to,
+      'the watcher detects and enqueues; it has no path to Ring 3 (§5.1)',
+      where,
+    )
 
   // Ring N X-> Ring > N
   if (typeof from.ring === 'number' && typeof target.ring === 'number' && target.ring > from.ring)
@@ -71,7 +91,10 @@ const IMPORT_RE = /from\s+['"](@(?:repo|app)\/[a-z-]+)(?:\/[^'"]*)?['"]/g
 for (const m of manifests) {
   for await (const rel of new Glob('**/*.ts').scan({ cwd: m.dir })) {
     const src = await Bun.file(join(m.dir, rel)).text()
-    for (const match of src.matchAll(IMPORT_RE)) checkEdge(m, match[1]!, `${m.dir}/${rel}`)
+    for (const match of src.matchAll(IMPORT_RE)) {
+      const target = match[1]
+      if (target) checkEdge(m, target, `${m.dir}/${rel}`)
+    }
   }
 }
 
@@ -81,4 +104,4 @@ if (violations.length > 0) {
   console.error('\nThese are architectural invariants, not style. Fix the import, not the rule.\n')
   process.exit(1)
 }
-console.log(`Boundaries OK — ${manifests.length} workspaces, 0 forbidden edges.`)
+console.info(`Boundaries OK — ${manifests.length} workspaces, 0 forbidden edges.`)
