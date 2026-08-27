@@ -124,8 +124,14 @@
     "packages/design-system": {
       "name": "@repo/design-system",
       "version": "0.0.0",
+      "dependencies": {
+        "react": "catalog:",
+        "react-dom": "catalog:",
+      },
       "devDependencies": {
         "@types/bun": "catalog:",
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
         "typescript": "catalog:",
       },
     },

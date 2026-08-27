@@ -1,0 +1,67 @@
+:root {
+  --paper: #e8edf2;
+  --paper-2: #f4f7fa;
+  --ink: #1c2430;
+  --ink-muted: #5a6878;
+  --rule: #c5d0dc;
+  --survey: #0b6e99;
+  --survey-ink: #063d56;
+  --live: #2a6b4e;
+  --alert: #b5472a;
+  --warn: #8a6a12;
+  --chip: #d9e4ee;
+  --shadow: 0 1px 0 rgb(28 36 48 / 8%);
+  --font: "IBM Plex Sans", "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", "ui-monospace", monospace;
+  --space: 8px;
+  --max: 1120px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+a {
+  color: var(--survey);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--survey-ink);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 560;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+h1 {
+  font-size: 1.75rem;
+  margin: 0 0 0.5rem;
+}
+
+h2 {
+  font-size: 1.15rem;
+  margin: 0 0 0.75rem;
+}

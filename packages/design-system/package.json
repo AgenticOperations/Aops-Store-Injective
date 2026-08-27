@@ -9,14 +9,21 @@
     "#private/*": "./private/*.ts"
   },
   "exports": {
-    "./components": "./public/components.ts"
+    "./components": "./public/components.tsx",
+    "./tokens.css": "./public/tokens.css"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
   "devDependencies": {
     "typescript": "catalog:",
-    "@types/bun": "catalog:"
+    "@types/bun": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
   }
 }

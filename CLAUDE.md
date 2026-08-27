@@ -1,94 +1,77 @@
 # Aops-Store-BNB — Agent Workspace Rules
 
-Agent marketplace for BNB Chain's "Build the Era" hackathon. See `PRODUCT-STATE.md` for what's
-currently being built/decided — read it at the start of any non-trivial session.
+**Mode: BUILD.** You are implementing, not researching. Read this file, then
+`PRODUCT-STATE.md`, then the current plan. Do not wander the architecture tree.
 
-This file exists because of a recurring, concrete failure mode: new ideas discussed in
-conversation kept conflicting with things already written in older docs, and that conflict
-got treated as a silent veto — either the new idea got blocked because "the docs say
-otherwise," or an old doc got silently contradicted with nothing updated to reflect it.
-Found in the wild in this repo on 2026-08-24: three files describing three different
-trust-tier systems simultaneously, and a set of states (`COMMERCIAL_VERIFIED`, `RISK_REVIEW`,
-`APPROVED`) silently dropped from the ingestion ladder with no record of the decision. The
-rules below exist to stop that specific thing from happening again.
+Current plan: [`docs/build/2026-08-27-ui-scaffold-plan.md`](docs/build/2026-08-27-ui-scaffold-plan.md)
+Current sequencing: Decision [`0003`](docs/architecture/decisions/0003-kc-ui-first-then-agents.md)
+— scaffold UI now, agents after.
 
-## Doc pipeline — three tiers, in order
+---
 
-1. **`docs/unverified-ideas-and-flows/`** — raw ideas, from either collaborator (Ryuk or KC)
-   or an AI session. No structure required. Nothing here is binding on anything, and nothing
-   here should be treated as a reason to block discussing a different idea.
-2. **`docs/architecture/`** — structured, verified design docs (numbered sections,
-   `decisions/` holds ADRs recording *why* a change was made — folded into the numbered files,
-   not read as a separate parallel source of truth). This is where active design work happens
-   and content can still change as understanding improves.
-3. **`docs/final-review-docs/`** — canonical, factually-proven-robust, ready-for-review docs.
-   Once a topic has an entry here (tracked in that folder's own `README.md`), it is the source
-   of truth for that topic. `docs/architecture/` content on the same topic is reconciled
-   toward it, never the reverse.
+## What to do this session
 
-## The rule that actually fixes the recurring conflict
+1. Open the current plan. Do the next unchecked task. Stop when the chunk's verify step passes.
+2. If the plan is silent on something, it is out of scope. Do not invent it.
+3. When a chunk is done, tick the checkboxes in the plan in the same turn.
 
-An older doc describing a topic that's now being actively redesigned in conversation is
-**not a veto**. When a new idea conflicts with something already written:
+## What you may read (and nothing else, unless the plan cites a section)
 
-- Say so explicitly and name the conflict, quoting the specific line/section.
-- Do not silently treat the old doc as binding and refuse to discuss the new idea further.
-- Do not silently overwrite the old doc either, before the human(s) have actually decided.
-- Once a decision is made, update the doc **and** stamp everything it supersedes, in the same
-  turn (see below). Discussion happens first; documents catch up after, not before.
-- If dropping or changing something that existed before (a state, a gate, a rule), say so
-  explicitly, even if it seems like an obvious simplification. "This exists in doc X and I'm
-  now removing/changing it because Y" is one sentence. Silently letting it disappear is the
-  exact failure this file exists to prevent.
+| Need | File |
+|---|---|
+| What to build next | `docs/build/2026-08-27-ui-scaffold-plan.md` |
+| What phase we are in | `PRODUCT-STATE.md` |
+| Where a screen goes | `docs/architecture/00` §7.2 — buyer screen → `apps/web` + `design-system`; builder screen → `apps/console` + `design-system` |
+| Unclaimed / claim / ladder | `docs/final-review-docs/01` only if the plan's task names it |
+| Rebalancing buyer surface | `docs/final-review-docs/03` §9 only if the plan's task names it |
+| Four-layer trust UI | `docs/architecture/05` §5.2 only if the plan's task names it |
+| Engine names / pipeline map | the scorecard **inside the plan** (copied from the decomposition). Do not re-derive it. |
 
-## Supersession rule (mandatory, not optional)
+Do not open `docs/unverified-ideas-and-flows/` to "check one more idea." Do not promote docs.
+Do not write ADRs unless the human asks. Do not start the agents repo.
 
-The moment a doc's content is superseded by a newer decision, in the **same turn**:
+## Hard stops
 
-1. Add an inline `⚠ SUPERSEDED` (or reconcile the content directly, if it's cheap to do so —
-   prefer fixing the actual table/text over just a warning banner where feasible) at the exact
-   section, pointing to the doc that replaces it.
-2. If a `docs/final-review-docs/` entry is involved, update that folder's `README.md` status
-   table.
-3. If something is being dropped/changed without a full resolution yet, add it to an explicit
-   "open architectural gaps" note in the affected canonical doc (see
-   `final-review-docs/01-ingestion-and-registration-of-agents.md` §12 for the pattern) — not
-   silently, and not conflated with ordinary tuning-value open items.
+- **No Ring 3 from the UI.** `apps/web` and `apps/console` do not import `@repo/custody` or
+  `@repo/settlement`. Hire, revoke, attest, sandbox-run are shells. A disabled control with
+  the reason on the page beats a fake success.
+- **No `@repo/domain` or `@repo/database` writes.** Fixture types live in the app. Shared Ring 0
+  types are a later joint commit, not this plan.
+- **No vendor invention.** If you need Altana / AACP / Pancake / Venus / ERC-8004 behaviour
+  that is not already on the page as fixture copy, stop. Do not curl docs. Do not guess.
+- **No stack swaps.** Next.js App Router, Hono, Bun, Drizzle — already chosen (`00` Part 8).
+- **No `console.log`.** Biome errors on it.
+- **Do not push `main`.**
 
-Do not defer any of this to "later." Deferring it is exactly the mechanism that caused the
-2026-08-24 three-way trust-tier conflict.
+## Rings (still in force — this is how careful to be, not a research topic)
 
-## Handoffs — named for the reader, not the writer
+Dependencies run downward only. `design-system` imports no service package. `evidence` does
+not import `scoring`. `apps/watch` does not import `custody` or `settlement`. If a change
+seems to need two rings, it needs two files (`00` §7.2). Run `bun run check:boundaries`
+before you call a chunk done.
 
-Two append-only logs: `HANDOFF_RYUK.md`, `HANDOFF_KC.md`. **A handoff goes in the file named
-for whoever it is written *to*** — KC writing for Ryuk appends to `HANDOFF_RYUK.md`; Ryuk
-writing for KC appends to `HANDOFF_KC.md`. Never edit or delete prior entries in either file.
-If it's unclear who the note is for, ask before appending.
+## When a decision actually changes
 
-> ⚠ **Changed 2026-08-25**, superseding "each session appends to the file matching whoever is
-> driving that session" — which was the reverse. `HANDOFF_KC.md`'s existing entry already
-> follows this rule (written by Ryuk's session, for KC). `HANDOFF_RYUK.md`'s pre-split entries
-> are author-keyed self-logs from before 2026-08-24 and are left as they are, not reinterpreted.
+The old research-era rules still apply to **decisions**, not to curiosity:
 
-## Rigor bar for `docs/final-review-docs/`
+- Name the conflict. Do not silently overwrite, and do not treat the old line as a veto.
+- Same turn: stamp `⚠ SUPERSEDED` at the exact section, update `final-review-docs/README.md`
+  if that folder is involved, append the handoff **named for the reader**
+  (`HANDOFF_RYUK.md` if writing to Ryuk, `HANDOFF_KC.md` if writing to KC).
 
-Writing or editing anything in this folder requires the same bar as
-`01-ingestion-and-registration-of-agents.md`: primary-source-verified (not asserted from
-memory), actively challenged for loopholes before being called done, and any gap versus prior
-docs resolved explicitly — named and decided, or named and left open — never silently
-dropped.
+You should almost never hit this while executing the UI scaffold plan.
 
-## Never do
+## Handoffs
 
-- Do not treat `docs/architecture/` content as immutable just because it's already written —
-  it's the "structured but still refinable" tier, not the final tier.
-- Do not invent Circle/AACP/Altana/PancakeSwap/Venus/ERC-8004 API behavior — verify against
-  primary sources (raw whitepaper text, live API calls via `curl`/`gh api`, not WebFetch
-  summaries — see `docs/architecture/03-evidence-trust-engine-pipeline.md`'s Audit Notes for
-  the standard this repo already holds itself to).
-- Do not push to `main` directly.
+Append-only. File is named for whoever the note is **to**. Never edit prior entries.
 
 ## Branches
 
-- `main` — stable.
-- `planning/docs` — architecture/design docs land here first, before any code.
+- `main` — stable. Do not push here.
+- `planning/docs` — architecture/design. Do not dump UI code here.
+- `build/staging` — this work.
+
+## After this plan
+
+When every checkbox in `docs/build/2026-08-27-ui-scaffold-plan.md` is ticked, stop and wait.
+The next plan (marketplace engines, or agents) is a new file. Do not start it unasked.
