@@ -1,15 +1,14 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
   "tasks": {
-    "typecheck": {
-      "dependsOn": [
-        "^typecheck"
-      ]
+    "dev": {
+      "cache": false,
+      "persistent": true
     },
-    "test": {
-      "dependsOn": [
-        "^test"
-      ]
+    "start": {
+      "cache": false,
+      "persistent": true
     },
     "build": {
       "dependsOn": [
@@ -19,6 +18,16 @@
         "dist/**",
         ".next/**",
         "!.next/cache/**"
+      ]
+    },
+    "typecheck": {
+      "dependsOn": [
+        "^typecheck"
+      ]
+    },
+    "test": {
+      "dependsOn": [
+        "^test"
       ]
     }
   }

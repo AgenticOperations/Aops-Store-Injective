@@ -48,6 +48,40 @@ check failed with exit 1 and named the rule. A guard that has never failed is no
 > §6.4. It cannot be checked here and does not need to be — it is enforced by those packages
 > being in a different repository (`00` §4, Decision 0001). That is the point of the split.
 
+## Running it
+
+```bash
+bun install
+bun run dev          # all five deployables, one command
+bun run check        # boundaries + typecheck + lint
+```
+
+| Command | Runs | Port |
+|---|---|---|
+| `bun run dev` | **everything** | — |
+| `bun run dev:web` | buyer marketplace | **3000** |
+| `bun run dev:api` | machine surface (`/openapi.json`) | **3001** |
+| `bun run dev:console` | builder console | **3002** |
+| `bun run dev:jobs` | batch tasks | — |
+| `bun run dev:watch` | always-on chain watcher | — |
+
+Grouped by `00` §1.5's three clocks, when you want one shape at a time:
+
+| Command | Clock | Deployables |
+|---|---|---|
+| `bun run dev:human` | request → response | `web` · `console` · `api` |
+| `bun run dev:batch` | scheduled, retried, idempotent | `jobs` |
+| `bun run dev:continuous` | never sleeps | `watch` |
+
+Production starts mirror these exactly: `start`, `start:web`, `start:api`, … Each deployable
+runs standalone — that is the point of Part 5's five-runtime split, and it is why `watch` can
+be deployed and left running before anything else is finished.
+
+Verified 2026-08-27: `bun run dev` brings all five up together; web/console/api answer on 3000
+/3002/3001 simultaneously.
+
+## Deliberately absent
+
 ## Stack — selected 2026-08-27, recorded in `00` Part 8
 
 | Slot | Choice | Verified |

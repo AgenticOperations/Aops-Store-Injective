@@ -33,12 +33,31 @@
     }
   },
   "scripts": {
-    "check": "bun run check:boundaries && bun run typecheck",
+    "dev": "turbo run dev",
+    "start": "turbo run start",
+    "build": "turbo run build",
+    "dev:web": "turbo run dev --filter=@app/web",
+    "dev:console": "turbo run dev --filter=@app/console",
+    "dev:api": "turbo run dev --filter=@app/api",
+    "dev:jobs": "turbo run dev --filter=@app/jobs",
+    "dev:watch": "turbo run dev --filter=@app/watch",
+    "dev:human": "turbo run dev --filter=@app/web --filter=@app/console --filter=@app/api",
+    "dev:batch": "turbo run dev --filter=@app/jobs",
+    "dev:continuous": "turbo run dev --filter=@app/watch",
+    "start:web": "turbo run start --filter=@app/web",
+    "start:console": "turbo run start --filter=@app/console",
+    "start:api": "turbo run start --filter=@app/api",
+    "start:jobs": "turbo run start --filter=@app/jobs",
+    "start:watch": "turbo run start --filter=@app/watch",
+    "check": "bun run check:boundaries && bun run typecheck && bun run lint",
     "check:boundaries": "bun tooling/check-boundaries.ts",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "lint": "biome check .",
-    "format": "biome format --write ."
+    "format": "biome format --write .",
+    "db:generate": "turbo run db:generate --filter=@repo/database",
+    "db:migrate": "turbo run db:migrate --filter=@repo/database",
+    "clean": "rm -rf node_modules .turbo **/.turbo **/node_modules **/.next"
   },
   "devDependencies": {
     "turbo": "^2.3.3",
