@@ -66,3 +66,9 @@ measures them only by independently reading chain state — never by trusting th
 Section 0 Part 9 item 6 — *where the agents repository physically lives and how its deployments
 are configured* — is not answered by this decision and needs its own short design pass before
 Category Agent build work can be scaffolded.
+
+> **⚠ Scoped 2026-08-27.** That open item blocks **agent** scaffold only. It does not block UI
+> work in this repository. KC's current queue is Decision
+> [`0003`](0003-kc-ui-first-then-agents.md): scaffold `apps/web` + `apps/console` now, then
+> move to the agents. Item 6 still has to be answered before anyone runs `create-*` in the
+> agents repo.

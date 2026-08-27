@@ -137,3 +137,21 @@ on both sides (retrieval-grounding as the safety net if semantic ranking is kept
 non-determinism/prompt-injection risks named explicitly either way).
 
 ---
+
+## 2026-08-27 — Correcting the 08-24 "Do not start Builder Console" line. UI now, agents next
+
+From KC, for the next session on this side. The 2026-08-24 entry above said **Do not start
+Builder Console yet.** That sequencing is **superseded**. Decision
+[`0003`](docs/architecture/decisions/0003-kc-ui-first-then-agents.md).
+
+**This week's work:** scaffold `apps/web` and `apps/console` — routes, layout, design-system
+wiring, page shells. Not hire-card mechanics, not `grantSession`.
+
+**After that:** agents, progressively, in the separate repo. E5 grading and sandbox-compat
+(assigned in the 2026-08-25 entry above) land as each agent is framed, not before UI starts.
+
+Do not treat the 08-24 / 08-25 entries as "start the rebalancer first." Read `PRODUCT-STATE.md`
+and Decision 0003 instead. Full note for Ryuk is in `HANDOFF_RYUK.md`'s matching 2026-08-27
+entry.
+
+---

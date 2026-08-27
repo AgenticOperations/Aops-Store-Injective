@@ -747,3 +747,36 @@ uniquely ours — and it is not one of E9's six factors.
 **Open for you:** is a zero-evidence agent *unknown* (your §5.2 neutral floor) or *weak negative*
 (`MARKET-RESEARCH.md` §2b)? Both are in the repo. That one answer sets the floor, closes the
 re-register-to-reset-your-score hole, and settles half of the trust-tier question still on hold.
+
+---
+
+## 2026-08-27 — KC's queue is UI now, then agents. Do not read agent work as waiting on KC this week
+
+From KC, for Ryuk.
+
+**Decision [`0003`](docs/architecture/decisions/0003-kc-ui-first-then-agents.md).** KC is
+scaffolding the UI in this repo now (`apps/web`, `apps/console` — page shells, layout,
+design-system wiring), then moving to the agents and growing them progressively.
+
+This supersedes, as a *work order*:
+
+- `HANDOFF_KC.md` 2026-08-24 "Do not start Builder Console yet"
+- `PRODUCT-STATE.md`'s old next-step 4 (console deferred)
+- reading `04b` §4b.10 / `03` §12 "goes first" as KC's calendar
+- treating proof-engine §9 (E5 grading, sandbox-compat) as work KC must finish before UI
+
+Those agent items are still KC's, and still required **when the agents are built**. They are
+not this week's first move. `04b` §4b.10 remains the risk ranking *inside the agents repo*.
+
+**Still true, not reopened:**
+
+- Agents live in a separate repo (Decision 0001). Part 9 item 6 (where it lives) still has to
+  be answered before anyone scaffolds agent code — that is a later gate, not a reason to
+  treat KC as halted.
+- E11's four hire-card decisions still block *wiring* `grantSession`. They do not block
+  scaffolding the pages around it.
+
+Stamped in the same turn: `04b` §4b.10, `final-review-docs/03` §12, Decision 0001 "Still
+open", `PRODUCT-STATE.md`, `SCAFFOLD.md`, decomposition §5 / console row,
+`final-review-docs/README.md`.
+

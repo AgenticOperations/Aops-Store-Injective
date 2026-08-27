@@ -604,6 +604,12 @@ item, not a Tier 2 nicety.
 
 ## 12. Build tiering for this category
 
+> **⚠ SUPERSEDED 2026-08-27 as KC's work order, not as the category's risk ranking.** The
+> agents-row note "goes first" is the order **inside the agents repo when that work starts.**
+> Decision [`0003`](../architecture/decisions/0003-kc-ui-first-then-agents.md): KC scaffolds
+> the UI (`apps/web`, `apps/console`) now, then moves to the agents. Marketplace rows in this
+> table are unblocked either way. This table is otherwise unchanged.
+
 Consistent with `04b` §4b.10, restricted to Rebalancing.
 
 **Tier 1 — must ship**

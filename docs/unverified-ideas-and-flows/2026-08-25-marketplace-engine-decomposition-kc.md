@@ -594,8 +594,8 @@ rank = w1·capability_match + w2·risk_fit + w3·trust_and_evidence_strength
 
 | Surface | App | Status |
 |---|---|---|
-| **Buyer marketplace** — discovery, detail, compare, simulate, hire, active-agent console with visible revoke | `apps/web` | 🚧 4-layer trust UI designed; discovery screens undesigned |
-| **Builder Console** — claim/register, status, trigger Medium, commercial config, revoke, read-only disputes | `apps/console` | 🚧 drafted in chat, **blocked by E11** |
+| **Buyer marketplace** — discovery, detail, compare, simulate, hire, active-agent console with visible revoke | `apps/web` | 🚧 4-layer trust UI designed; discovery screens undesigned. **Scaffolding now** (Decision 0003) |
+| **Builder Console** — claim/register, status, trigger Medium, commercial config, revoke, read-only disputes | `apps/console` | 🚧 drafted in chat. **E11 still blocks hire-card wiring, not page scaffold.** Scaffolding now (Decision 0003) |
 | **Public Agent API** — the machine-facing contract (`/search`, `/agents/{id}`, `/quote`, `/hire`) | `apps/api` | 🚧 flow defined, endpoints named, no doc |
 | **Admin / Ops** — moderation queue, dispute arbitration, taxonomy management | — | ❌ nothing |
 
@@ -632,6 +632,12 @@ taking the product with it.
 
 **E11 is not on the critical path but it blocks a person** — the Builder Console cannot start
 until it is decided, so it should be resolved first even though it is small.
+
+> **⚠ Changed 2026-08-27 — Decision [`0003`](../architecture/decisions/0003-kc-ui-first-then-agents.md).**
+> The line above is wrong as a *start* gate. KC scaffolds `apps/web` + `apps/console` now
+> (layout, routes, shells). E11 still blocks wiring the hire card / `grantSession`, not
+> standing the surfaces up. Agent work (E5 grading, sandbox-compat, rebalancer spike) moves
+> after the UI scaffold, not before.
 
 ---
 

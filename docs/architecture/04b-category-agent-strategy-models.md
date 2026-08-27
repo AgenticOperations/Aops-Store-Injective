@@ -725,6 +725,13 @@ The rebalancer is the only Tier 1 item that is real engineering rather than deci
 is also the top risk in the project and is still unspiked — **it goes first, before anything
 else.**
 
+> **⚠ SUPERSEDED 2026-08-27 as a personal work-queue, not as a risk ranking.** "Goes first,
+> before anything else" is the order **inside the agents repository when that work starts.**
+> It is not KC's calendar. Decision
+> [`0003`](decisions/0003-kc-ui-first-then-agents.md): KC scaffolds `apps/web` +
+> `apps/console` now, then moves to the agents and grows them progressively. This table is
+> unchanged for what the agents repo must ship.
+
 ### Tier 2 — should ship, in this order
 
 1. Range orders instead of swaps for the **grid** (smaller change than for the rebalancer).

@@ -3,7 +3,7 @@
 Living snapshot, not a log — overwritten as things progress. For chronological history, see
 `HANDOFF_RYUK.md` / `HANDOFF_KC.md`. For the doc pipeline this file assumes, see `CLAUDE.md`.
 
-**Last updated**: 2026-08-25
+**Last updated**: 2026-08-27
 
 ## What this is
 
@@ -15,9 +15,10 @@ Submission deadline: 2026-09-09.
 
 ## Phase
 
-**Pre-build.** All work so far is architecture/design in `docs/architecture/`, being
-progressively promoted to `docs/final-review-docs/` as sections reach a proven-robust state.
-No implementation has started.
+**UI scaffold.** Repo shape is standing on `build/staging` (16 packages, 5 apps). KC is
+scaffolding the buyer and builder surfaces now, then moving to the agents. See Decision
+[`0003`](docs/architecture/decisions/0003-kc-ui-first-then-agents.md). Architecture continues
+to promote into `docs/final-review-docs/` alongside that.
 
 ## What's canonical right now
 
@@ -46,10 +47,12 @@ No implementation has started.
 
 ## In progress
 
-- **Builder Console (minimum)** — architecture drafted in chat (`apps/console`, zero Ring 3
-  access, construct-not-sign pattern for owner-funded flows; claim/register, status
-  dashboard, Medium-tier trigger, High-tier dual entry, commercial-config editor, revoke,
-  read-only disputes), not yet written to `docs/final-review-docs/`.
+- **UI scaffold (KC, now)** — `apps/web` (buyer marketplace) and `apps/console` (builder).
+  Page shells, layout, design-system wiring. Hire-card / `grantSession` wiring still waits
+  on E11's four open decisions; that does not block standing the surfaces up. Decision 0003.
+- **Agents (KC, next)** — progressive, in the separate agents repo (Decision 0001). Blocked
+  on Part 9 item 6 (where that repo lives) *when that work starts*, not this week. E5 grading
+  and sandbox-compat are defined as each agent is framed, not as a UI prerequisite.
 
 ## Known open architectural gaps (not silently dropped — tracked explicitly)
 
@@ -82,20 +85,17 @@ per-collaborator handoffs (`HANDOFF_RYUK.md`, `HANDOFF_KC.md`, split from the si
 
 ## Next steps
 
-Goal: finalize everything below so the **Discovery Engine is the last unbuilt component**,
-with all its dependencies — especially the proof/evidence engine — ready end-to-end before
-it's started. Full detail in `HANDOFF_KC.md`'s 2026-08-24 entry.
+**KC this week (Decision 0003):** scaffold the UI, then move to the agents.
 
-1. Promote `docs/architecture/04`/`04b` to `docs/final-review-docs/` **one category at a time**.
-   Rebalancing is done (`03-category-agent-rebalancing.md`). Remaining, in order: grid trading,
-   yield optimisation, health-factor monitoring — the last one must fix `04`'s false Venus
-   threshold citation (it claims the `≥1.30`/`≥1.40` recovery thresholds are "confirmed in
-   Section 3"; they aren't — only `04b`'s citation of `venus-agent-skills` has them).
-2. Formalize execution, hiring-job, and proof/evidence work — `docs/architecture/03` and `05`
-   are the source material; reconcile their remaining stale package-path naming as each
-   section is promoted.
-3. Resolve the four open gaps above explicitly (user decision needed, not an inline default).
-   Gap 4 is the most time-sensitive — it decides whether the rebalancing category has real
-   evidence behind it at judging time.
-4. Builder Console stays deferred until 1–3 are real — it's a UI over flows that don't have a
-   console-facing interaction model yet, and it's blocked by gap #1 above.
+1. **Now — UI scaffold** in `apps/web` and `apps/console`. Empty routes, layout, design-system
+   wiring, page shells. Not hire-card mechanics, not `grantSession`.
+2. **Then — agents**, progressively, in the separate agents repo. Rebalancer V3 spike is still
+   the first engineering item *there* (`04b` §4b.10, `03` §12). Needs Part 9 item 6 answered
+   first (where that repo lives).
+3. Architecture catch-up, not a gate on (1): promote remaining categories (grid, yield,
+   health-factor) one at a time; reconcile stale package paths in `architecture/03` and `05`;
+   the four open gaps above stay named. Gap 1 still blocks *wiring* the hire card, not
+   scaffolding the console around it.
+
+`HANDOFF_KC.md`'s 2026-08-24 "Do not start Builder Console yet" is superseded by Decision 0003.
+Do not treat that entry as current.

@@ -132,7 +132,13 @@ location.
 
 ## Next
 
-`bun install`, then build into the tree. Per `final-review-docs/03` §12 Tier 1, the marketplace
-side starts at `market-data` (five reads) → `metrics` (four pure KPIs) → `apps/watch` tick
-accumulation. `E16`'s delivery contract should be written down before `evidence`/`scoring` are
-built, because both inherit whatever it guarantees.
+> **⚠ Changed 2026-08-27 — Decision [`0003`](docs/architecture/decisions/0003-kc-ui-first-then-agents.md).**
+> KC scaffolds the UI now (`apps/web`, `apps/console`), then moves to the agents. The
+> `market-data` → `metrics` → `apps/watch` path below is still the marketplace *engine* start
+> once UI shells exist; it is not this week's first move.
+
+`bun install`, then scaffold buyer + builder surfaces into the tree. Per
+`final-review-docs/03` §12 Tier 1, the marketplace **engine** side (when that work starts)
+is `market-data` (five reads) → `metrics` (four pure KPIs) → `apps/watch` tick accumulation.
+`E16`'s delivery contract should be written down before `evidence`/`scoring` are built,
+because both inherit whatever it guarantees.
