@@ -193,6 +193,19 @@ product and it is nearly free.
 
 ## 4b.4 Agent 1 — LP Range Rebalancer
 
+> **⚠ Expanded and superseded in part** by
+> `docs/final-review-docs/03-category-agent-rebalancing.md` (2026-08-25), which is canonical for
+> this category end to end. What that document changes here, verified by live chain calls:
+> (a) the contract surface below is **incomplete** — 81,608 V3 positions on mainnet are owned by
+> `MasterChefV3` (`0x556B9306565093C855AEA9AE92A594704c2Cd59e`), so `NPM.decreaseLiquidity`
+> reverts on any farmed position and the sequence is six steps, not four; (b) a **pool-viability
+> precondition** (`fee APR > σ²/8`) now sits ahead of the trigger, cheaper and more decisive than
+> the deferred EV gate; (c) **BSC testnet has no order flow** (pools last traded 1.5–128 days
+> ago against a mainnet control of ~0 seconds), so none of the KPIs below can be produced from
+> organic testnet activity. The strategy ladder, the base+limit design and the KPI names below
+> are unchanged and still correct.
+
+
 ### The job, in plain English
 
 A user has money in a PancakeSwap V3 concentrated-liquidity position: *"I'll provide trading
@@ -652,8 +665,11 @@ first-class hooks.
    base+limit pattern on Uniswap v3 years before hooks existed.
 2. V3 holds the deep existing liquidity, and its addresses are already verified in Section 3.
 3. The PancakeSwap-track pitch is a **V3** story: the retired Position Manager (deposits
-   disabled May 2025, removed from the UI June 2025) means the largest DEX on BSC has ~$273M
-   of V3 liquidity and no working automated management for it. *"You tried vaults; agents fix
+   disabled May 2025, removed from the UI June 2025 — **[R]**, still unverified at source; see
+   `final-review-docs/03-category-agent-rebalancing.md` §13 item 5) means the largest DEX on BSC
+   has **$237.7M** of V3 liquidity (measured live 2026-08-25 via `api.llama.fi`, correcting the
+   ~$273M figure previously stated here — always read this live, never hardcode it)
+   and no working automated management for it. *"You tried vaults; agents fix
    the reasons vaults did not stick."*
 4. `CLLimitOrder` is **not** in Infinity's official deploy scripts **[V]** — using it means
    deploying and maintaining a hook ourselves. That is a real cost and a poor bet with the

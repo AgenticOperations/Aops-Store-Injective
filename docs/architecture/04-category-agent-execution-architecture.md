@@ -15,7 +15,10 @@ depends_on: 01-data-model-state-machines.md, 02-module-boundaries-repo-layout.md
 
 > **⚠ 4.3 is superseded.** Its decision-rule table (the threshold checks for each agent) is
 > replaced by `04b-category-agent-strategy-models.md`, which found three of the four rules lose
-> money or don't perform the mandated category at all. Everything else in this file — the
+> money or don't perform the mandated category at all.
+> **The Rebalancer row is superseded twice over**: `docs/final-review-docs/03-category-agent-
+> rebalancing.md` is now canonical for that category end to end (strategy, measurement, KPIs,
+> buyer surface, session scope) and is where to build from. Everything else in this file — the
 > READ→DECIDE→ACT→RECORD loop, the pure-DECIDE isolation, the dependency map — is still current
 > and is what 4b builds on.
 
@@ -108,7 +111,7 @@ not a shortcut, explained in 4.5.
 
 | Agent | Reads (step 1) | Decision rule (step 2) | Acts via (step 3) |
 |---|---|---|---|
-| **Rebalancer** | Wallet's token split (e.g. BNB/USDC balances) vs. configured target split | If actual split drifts more than a configured threshold from target, swap the excess side back to target | PancakeSwap V3 `SwapRouter` |
+| **Rebalancer** ⚠ SUPERSEDED → `final-review-docs/03-category-agent-rebalancing.md` | Wallet's token split (e.g. BNB/USDC balances) vs. configured target split | If actual split drifts more than a configured threshold from target, swap the excess side back to target | PancakeSwap V3 `SwapRouter` |
 | **Grid trader** | Current pool price vs. a configured list of fixed price levels | If price crosses an unfilled grid level, place the buy/sell order for that level | PancakeSwap V3 `SwapRouter` |
 | **Yield optimizer** | Deposited Venus market's current supply APY vs. other Venus markets' APY | If another market beats the current one by more than a configured margin, withdraw and redeposit there | Venus `vToken` withdraw/deposit |
 | **Health-factor monitor** | Venus borrow position's `weightedCollateralUSD` / `debtUSD` | If health ratio drops below a configured safety line, repay debt or add collateral until it's back above target | Venus `vToken` repay/deposit-collateral |

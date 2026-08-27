@@ -20,6 +20,8 @@ three files describe three different trust-tier systems at once before this inde
 |---|---|---|
 | Ingestion, registration, DISCOVERED→LIVE ladder, Low/Medium/High trust tiers | [01-ingestion-and-registration-of-agents.md](01-ingestion-and-registration-of-agents.md) | `architecture/01-data-model-state-machines.md` §1.2 (state ladder), §1.8 (trust-tier gating); `architecture/03-evidence-trust-engine-pipeline.md` §3.2 (onboarding mechanism); `architecture/decisions/0002-...md` Bug-1 fix; `architecture/05-buyer-trust-hiring-hosting.md` (Basic→Low rename) |
 | Fraud / Sybil detection (additive, hackathon-deferred — see doc's §7) | [02-fraud-sybil-detection.md](02-fraud-sybil-detection.md) | `architecture/01-data-model-state-machines.md` §1.10 (signal categories, now fully specified); `architecture/03-evidence-trust-engine-pipeline.md` §3.6 (sybil precedent, mechanics now specified) and §3.3 step 6 (self-dealing guard, now extended to owner-controlled identities) |
+| **Rebalancing category** — LP Range Rebalancer strategy model, independent measurement, KPIs, buyer surface, session scope | [03-category-agent-rebalancing.md](03-category-agent-rebalancing.md) | `architecture/04-category-agent-execution-architecture.md` §4.3 (Rebalancer row); `architecture/04b-category-agent-strategy-models.md` §4b.4 (expanded + corrected: MasterChefV3 surface, pool-viability gate) and §4b.9 (V3 TVL figure) |
+| Grid trading / Yield / Health factor categories | *not yet written* — `architecture/04b` §4b.5–4b.7 remain the working source | — |
 | Builder Console | *not yet written* | — |
 
 ## Not yet reconciled (known gaps, not silent)
