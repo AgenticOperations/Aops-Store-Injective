@@ -1,0 +1,24 @@
+{
+  "name": "@repo/settlement",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": 3,
+  "imports": {
+    "#public/*": "./public/*.ts",
+    "#private/*": "./private/*.ts"
+  },
+  "exports": {
+    "./escrow": "./public/escrow.ts",
+    "./payments": "./public/payments.ts",
+    "./keys": "./public/keys.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:"
+  }
+}

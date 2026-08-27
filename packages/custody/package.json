@@ -1,0 +1,23 @@
+{
+  "name": "@repo/custody",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": 3,
+  "imports": {
+    "#public/*": "./public/*.ts",
+    "#private/*": "./private/*.ts"
+  },
+  "exports": {
+    "./sessions": "./public/sessions.ts",
+    "./keys": "./public/keys.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:"
+  }
+}

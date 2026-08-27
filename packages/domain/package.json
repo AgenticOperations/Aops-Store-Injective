@@ -1,0 +1,25 @@
+{
+  "name": "@repo/domain",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": 0,
+  "imports": {
+    "#public/*": "./public/*.ts",
+    "#private/*": "./private/*.ts"
+  },
+  "exports": {
+    "./entities": "./public/entities.ts",
+    "./state-machines": "./public/state-machines.ts",
+    "./guards": "./public/guards.ts",
+    "./types": "./public/types.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:"
+  }
+}

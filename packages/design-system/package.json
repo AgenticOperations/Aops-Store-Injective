@@ -1,0 +1,22 @@
+{
+  "name": "@repo/design-system",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": "shared",
+  "imports": {
+    "#public/*": "./public/*.ts",
+    "#private/*": "./private/*.ts"
+  },
+  "exports": {
+    "./components": "./public/components.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:"
+  }
+}

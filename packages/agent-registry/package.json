@@ -1,0 +1,23 @@
+{
+  "name": "@repo/agent-registry",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": 1,
+  "imports": {
+    "#public/*": "./public/*.ts",
+    "#private/*": "./private/*.ts"
+  },
+  "exports": {
+    "./registry": "./public/registry.ts",
+    "./keys": "./public/keys.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:"
+  }
+}

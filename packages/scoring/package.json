@@ -1,0 +1,25 @@
+{
+  "name": "@repo/scoring",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": 0,
+  "imports": {
+    "#public/*": "./public/*.ts",
+    "#private/*": "./private/*.ts"
+  },
+  "exports": {
+    "./score": "./public/score.ts",
+    "./weight": "./public/weight.ts",
+    "./independence": "./public/independence.ts",
+    "./version": "./public/version.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:"
+  }
+}
