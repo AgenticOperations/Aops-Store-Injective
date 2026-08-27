@@ -20,5 +20,10 @@
   "devDependencies": {
     "typescript": "catalog:",
     "@types/bun": "catalog:"
+  },
+  "dependencies": {
+    "pino": "catalog:",
+    "@sentry/node": "catalog:",
+    "zod": "catalog:"
   }
 }

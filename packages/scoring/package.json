@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "@types/bun": "catalog:"
+    "@types/bun": "catalog:",
+    "fast-check": "catalog:"
   }
 }

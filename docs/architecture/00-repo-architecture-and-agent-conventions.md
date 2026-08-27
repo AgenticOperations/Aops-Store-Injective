@@ -587,15 +587,34 @@ and start asserting, and asserting is how wrong code reaches Ring 3.
 | Runtime, package manager | Bun, with a root catalog | One version of every shared dependency (3.4) |
 | Monorepo orchestration | Turborepo | Per-package filtered tasks — the fast feedback loop of 7.5 |
 | Language | TypeScript everywhere | The official wallet-session provider is TypeScript-only; a single language across web, jobs and watch removes a whole class of boundary bugs |
-| Database | Postgres, typed schema + migrations | Evidence is append-only and long-lived; schema drift is unacceptable |
-| Scheduled / event work | A managed task runner with retries, backoff and observability | Section 3's pipelines *are* retried scheduled tasks. And the product must run unattended for weeks after submission — retries and visibility are requirements, not conveniences |
+| Database | Postgres, typed schema + migrations — **Drizzle + Neon** | Evidence is append-only and long-lived; schema drift is unacceptable |
+| **Chain I/O** | **viem** | **[ADDED 2026-08-27]** The most load-bearing dependency in the repo had no entry. 1.5's continuous clock needs real subscriptions, not polling; E5 reads five values per position across a population, so `multicall` batching is a requirement, not an optimisation |
+| **Testing** | **`bun test`, plus property-based testing (`fast-check`) for Ring 0** | **[ADDED 2026-08-27]** 1.4 says the credibility-critical logic is pure and "the easiest code in the system to test exhaustively". The methodology page promises every score is *re-derivable* — a property, and properties are what property-based tests check. Part 8 previously named no testing approach at all |
+| Scheduled / event work | A managed task runner with retries, backoff and observability — **Inngest** | Section 3's pipelines *are* retried scheduled tasks. And the product must run unattended for weeks after submission — retries and visibility are requirements, not conveniences |
 | Continuous watch | One small always-on process | 5.1 |
 | Secrets | Managed store + per-package validation at boot | 3.7 |
-| Web | One framework across buyer and builder surfaces | Shared design system, one set of patterns for agents to learn |
-| Machine API | A light HTTP framework | The agent-to-agent surface is a first-class product, not an afterthought on the web app |
-| Errors, logs, product analytics | Dedicated services, wrapped in `observability/` | Never `console.log`. Unattended operation means logs are the only witness |
-| Lint / format | Fast Rust-based tooling, plus custom rules for 6.4 | The forbidden-edge rules are the point; speed is what makes them get run |
+| Web | One framework across buyer and builder surfaces — **Next.js (App Router)** | Shared design system, one set of patterns for agents to learn |
+| Machine API | A light HTTP framework — **Hono + `@hono/zod-openapi`** | The agent-to-agent surface is a first-class product, not an afterthought on the web app |
+| Errors, logs, product analytics | Dedicated services, wrapped in `observability/` — **pino + Sentry** | Never `console.log`. Unattended operation means logs are the only witness |
+| Lint / format | Fast Rust-based tooling, plus custom rules for 6.4 — **Biome + `tooling/check-boundaries.ts`** | The forbidden-edge rules are the point; speed is what makes them get run |
 | Infrastructure | Declarative infrastructure-as-code | Reproducible, reviewable, and recoverable |
+
+> **⚠ Changed 2026-08-27 — vendors selected, two rows added.** This table previously named a
+> *category* for most rows and a vendor for four. The categories are unchanged and were not
+> overturned; the concrete picks above were evaluated against Part 1's six properties and
+> recorded here so nobody re-litigates them silently. Two rows are genuinely new: **Chain I/O**
+> and **Testing**, neither of which this table had — a notable gap for a product whose entire
+> output is computed from chain reads and whose central promise is reproducible numbers.
+>
+> **NestJS was evaluated and rejected for `apps/api`.** It boots correctly under Bun (verified
+> 2026-08-27, Fastify adapter, constructor DI intact) — the objection is structural, not
+> technical. Nest's value is structuring business logic, and §3.5 forbids business logic in the
+> app layer, so the full framework cost buys a benefit this design has already ruled out. It
+> also contradicts this table's own word for the machine API: *light*.
+>
+> **Runtime note:** Bun runs `api`, `watch`, `jobs` and tooling. The Next.js apps target Node,
+> as Next does. Verified: `next build` compiles under Bun. This is a mixed runtime by design,
+> not an accident.
 
 ---
 
@@ -603,16 +622,19 @@ and start asserting, and asserting is how wrong code reaches Ring 3.
 
 These are real and unresolved. They are listed so nobody assumes silence means agreement.
 
-1. **Web framework.** A single framework across `web` and `console` is settled; the specific
-   choice is not formally recorded. Earlier design assumed one; current working practice
-   points at another. Decide and write a decision record.
-2. **Bootstrap method** — scaffold fresh against these rules, or start from an existing working
-   configuration and strip it. Does not change the architecture; changes the first day of work.
+1. ~~**Web framework.**~~ **RESOLVED 2026-08-27 — Next.js (App Router).** Recorded with its
+   reason so it is not "helpfully" swapped later (1.7's last failure mode): the Unclaimed
+   directory's growth mechanism is a builder finding *their own agent already listed*, which is
+   organic search. A client-rendered SPA removes E1's claim funnel. Server components also read
+   `@repo/*` directly. Applies to both `web` and `console` per this table's one-framework rule.
+2. ~~**Bootstrap method.**~~ **RESOLVED 2026-08-27 — scaffolded fresh** against these rules
+   rather than stripping an existing configuration.
 3. **Do we need our own on-chain contracts?** Probably eventually — a benchmark attestation and
    a challenge-nonce registry are the two candidates. Not required by anything in Parts 1–8, so
    it stays out until something needs it.
-4. **`console` and `web` as one app or two.** Two is cleaner conceptually; one is less to
-   deploy and share. Not decided.
+4. ~~**`console` and `web` as one app or two.**~~ **RESOLVED 2026-08-27 — two**, following
+   2.1's tree and Part 5's runtime table, which already list them as separate deployables with
+   different Ring 3 access (`web` constructs-never-signs; `console` none).
 5. **How `census` is rate-limited and scheduled** at population scale — a real operational
    design question, not answered by the package boundary alone.
 6. **Where the agents repository lives** and how its deployments are configured. Out of scope
