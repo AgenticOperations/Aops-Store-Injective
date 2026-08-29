@@ -155,3 +155,28 @@ and Decision 0003 instead. Full note for Ryuk is in `HANDOFF_RYUK.md`'s matching
 entry.
 
 ---
+
+## 2026-08-29 — Bounded PEAGASIS v1 is back in scaffold scope. v2 still deferred
+
+From a brainstorming session with Kaushal, for whoever picks up the UI scaffold next.
+`docs/build/2026-08-27-ui-scaffold-plan.md` line 33 deferred "PEAGASIS chat" wholesale — that
+line didn't separate v1 (bounded, deterministic) from v2 (conversational, non-deterministic
+by design), which `2026-08-25-discovery-engine-ryuk.md` §5.5 had already split. Decision
+[`0004`](docs/architecture/decisions/0004-bounded-peagasis-chat-in-scaffold.md) pulls **only
+v1** back into this scaffold: a landing-page chat/search input, above (not replacing) the
+category grid, that does text → E8's structured query → the same deterministic fixture-filter
+the grid uses, with one clarifying question when category is ambiguous and a no-network
+keyword fallback if the LLM call fails. Real Gemini call (small/fast model, free tier), not a
+stub — a fake parser would undercut the exact axes (Functionality, Data Quality) it's meant to
+help.
+
+New chunk in the plan: **Chunk 2a**, between Chunk 2 and Chunk 3. New file map entry:
+`apps/web/src/app/api/discover/route.ts`. New env var: `GEMINI_API_KEY`.
+
+**Still deferred, unchanged**: v2 (chat-set ranking weights, semantic/vector retrieval), voice,
+chat-driven hire/sign. **Also clarified this session, not a repo change but worth recording**:
+Agent Studio (the Cursor/CLI builder tooling) is organizer-provided and out of scope for the
+buyer marketplace entirely — buyers need zero Agent Studio knowledge by design, so there is no
+"teach the user Agent Studio" surface to build anywhere in `apps/web`.
+
+---
