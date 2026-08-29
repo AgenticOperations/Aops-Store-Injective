@@ -8,7 +8,7 @@
       }
     ],
     "moduleResolution": "bundler",
-    "types": ["node", "react"],
+    "types": ["node", "react", "bun"],
     "allowJs": true,
     "incremental": true
   },
