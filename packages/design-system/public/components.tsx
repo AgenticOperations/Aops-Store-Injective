@@ -136,10 +136,12 @@ export function Banner({
 export function Button({
   href,
   disabled,
+  type = 'button',
   children,
 }: {
   href?: string
   disabled?: boolean
+  type?: 'button' | 'submit'
   children: ReactNode
 }) {
   const style: CSSProperties = {
@@ -155,7 +157,7 @@ export function Button({
     )
   }
   return (
-    <button type="button" style={style} disabled={disabled}>
+    <button type={type} style={style} disabled={disabled}>
       {children}
     </button>
   )

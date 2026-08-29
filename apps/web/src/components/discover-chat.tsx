@@ -52,7 +52,9 @@ export function DiscoverChat() {
             fontSize: 14,
           }}
         />
-        <Button disabled={loading}>{loading ? 'Thinking…' : 'Find an agent'}</Button>
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Thinking…' : 'Find an agent'}
+        </Button>
       </form>
 
       {response?.kind === 'clarify' && (
