@@ -2,6 +2,7 @@
   "extends": "../../packages/typescript-config/base.json",
   "compilerOptions": {
     "jsx": "preserve",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "plugins": [
       {
         "name": "next"
