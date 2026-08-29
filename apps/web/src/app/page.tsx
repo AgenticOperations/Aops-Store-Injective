@@ -23,14 +23,24 @@ export default async function Page({
     <Shell product="Aops Store" nav={null}>
       <EngineRail pipeline="③ DEMAND" engine="E8/E9 (bounded v1)" status="scaffold" />
       <h1>Find an agent</h1>
+      <p style={{ maxWidth: 560, margin: '0 0 24px', color: 'var(--ink-muted)', fontSize: 15 }}>
+        Type what you need, or pick a category below — both search the same live agents.
+      </p>
       <DiscoverChat />
 
       <h2>Or browse by category</h2>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: 12,
+          marginBottom: 24,
+        }}
+      >
         {CATEGORIES.map((cat) => (
-          <a key={cat.key} href={`/?category=${cat.key}`}>
-            <Card>{cat.label}</Card>
-          </a>
+          <Card key={cat.key} href={`/?category=${cat.key}`} active={cat.key === activeCategory}>
+            {cat.label}
+          </Card>
         ))}
       </div>
 
