@@ -108,10 +108,8 @@ h2 {
 a.ds-card {
   text-decoration: none;
   color: inherit;
-  transition:
-    border-color 180ms var(--ease),
-    background-color 180ms var(--ease),
-    transform 180ms var(--ease);
+  transition: border-color 180ms var(--ease), background-color 180ms var(--ease), transform 180ms
+    var(--ease);
 }
 
 a.ds-card:hover {
@@ -144,10 +142,8 @@ a.ds-card.is-active .ds-card-active-mark {
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition:
-    background-color 150ms var(--ease),
-    border-color 150ms var(--ease),
-    transform 100ms var(--ease);
+  transition: background-color 150ms var(--ease), border-color 150ms var(--ease), transform 100ms
+    var(--ease);
 }
 
 .ds-button:hover {
@@ -165,7 +161,7 @@ a.ds-card.is-active .ds-card-active-mark {
 }
 
 .ds-button:disabled,
-.ds-button[aria-disabled='true'] {
+.ds-button[aria-disabled="true"] {
   opacity: 0.45;
   pointer-events: none;
   cursor: default;
@@ -173,9 +169,7 @@ a.ds-card.is-active .ds-card-active-mark {
 
 /* Text input — the chat query field. */
 .ds-input {
-  transition:
-    border-color 150ms var(--ease),
-    box-shadow 150ms var(--ease);
+  transition: border-color 150ms var(--ease), box-shadow 150ms var(--ease);
 }
 
 .ds-input:focus {

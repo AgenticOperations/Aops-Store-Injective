@@ -115,7 +115,9 @@ export function Badge({
 }) {
   const t = BADGE_TONE[tone]
   return (
-    <span style={{ ...layout.badge, background: t.bg, color: t.text, border: `1px solid ${t.border}` }}>
+    <span
+      style={{ ...layout.badge, background: t.bg, color: t.text, border: `1px solid ${t.border}` }}
+    >
       {children}
     </span>
   )
