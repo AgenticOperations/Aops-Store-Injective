@@ -38,7 +38,10 @@ export function DiscoverChat() {
       const data = (await res.json()) as DiscoverResponse
       setResponse(data)
     } catch {
-      // The category grid below stays fully usable — this box failing never dead-ends the page.
+      // Clear any stale results so the error banner isn't sitting above results from a
+      // different query. The category grid below stays usable regardless — this box failing
+      // never dead-ends the page.
+      setResponse(null)
       setError(NETWORK_ERROR_MESSAGE)
     } finally {
       setLoading(false)
