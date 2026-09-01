@@ -28,6 +28,7 @@
       "name": "@app/console",
       "version": "0.0.0",
       "dependencies": {
+        "@repo/design-system": "workspace:*",
         "next": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:",

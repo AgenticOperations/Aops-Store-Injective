@@ -1,7 +1,6 @@
-// apps/web/src/components/discover-chat.tsx
 'use client'
 
-import { Banner, Button } from '@repo/design-system/components'
+import { Badge, Banner, Button, ChipRow } from '@repo/design-system/components'
 import { useState } from 'react'
 import type { Listing } from '../fixtures/listings'
 import { ListingGrid } from './listing-grid'
@@ -12,10 +11,18 @@ type DiscoverResponse =
 
 const NETWORK_ERROR_MESSAGE = "Couldn't reach the search. Check your connection and try again."
 
+/** Real sentences a buyer would actually type, one per mandated category. */
+const EXAMPLES = [
+  'protect my Venus position from liquidation',
+  'keep my CAKE/BNB position in range',
+  'run a grid on BNB/USDT',
+  'find the best stablecoin yield',
+]
+
 /**
  * Bounded chat surface (Decision 0004). This box is an alternate INPUT to the same filter the
- * category grid below it calls — it never replaces the grid, which stays visible and usable
- * whether or not this box is touched at all.
+ * category grid calls — it never replaces the grid, which stays visible and usable whether or not
+ * this box is touched at all.
  */
 export function DiscoverChat() {
   const [text, setText] = useState('')
@@ -23,24 +30,23 @@ export function DiscoverChat() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault()
-    if (!text.trim()) return
+  async function submit(query: string) {
+    if (!query.trim()) return
     setLoading(true)
     setError(null)
     try {
       const res = await fetch('/api/discover', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text: query }),
       })
       if (!res.ok) throw new Error('non-200 response')
       const data = (await res.json()) as DiscoverResponse
       setResponse(data)
     } catch {
-      // Clear any stale results so the error banner isn't sitting above results from a
-      // different query. The category grid below stays usable regardless — this box failing
-      // never dead-ends the page.
+      // Clear any stale results so the error banner isn't sitting above results from a different
+      // query. The category grid below stays usable regardless — this box failing never dead-ends
+      // the page.
       setResponse(null)
       setError(NETWORK_ERROR_MESSAGE)
     } finally {
@@ -49,39 +55,56 @@ export function DiscoverChat() {
   }
 
   return (
-    <div style={{ display: 'grid', gap: 12, marginBottom: 32 }}>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8 }}>
+    <div style={{ display: 'grid', gap: 'var(--s4)' }}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          void submit(text)
+        }}
+        className="ds-searchbar"
+      >
         <input
           value={text}
           onChange={(event) => setText(event.target.value)}
-          placeholder="e.g. protect my Venus position from liquidation"
+          placeholder="Describe what you need in your own words…"
+          aria-label="Describe what you need"
           className="ds-input"
-          style={{
-            flex: 1,
-            padding: '10px 12px',
-            background: 'var(--paper-2)',
-            color: 'var(--ink)',
-            border: '1px solid var(--rule)',
-            borderRadius: 2,
-            fontSize: 14,
-          }}
         />
         <Button type="submit" disabled={loading}>
           {loading ? 'Thinking…' : 'Find an agent'}
         </Button>
       </form>
 
+      <ChipRow>
+        {EXAMPLES.map((example) => (
+          <button
+            key={example}
+            type="button"
+            className="ds-chip"
+            onClick={() => {
+              setText(example)
+              void submit(example)
+            }}
+          >
+            {example}
+          </button>
+        ))}
+      </ChipRow>
+
       {error && <Banner tone="alert">{error}</Banner>}
 
       {response?.kind === 'clarify' && (
-        <p style={{ margin: 0, color: 'var(--ink-muted)' }}>{response.question}</p>
+        <Banner tone="survey">
+          <strong>One question first.</strong> {response.question}
+        </Banner>
       )}
 
       {response?.kind === 'results' && (
-        <div style={{ display: 'grid', gap: 8 }}>
-          <p style={{ margin: 0, fontSize: 13, color: 'var(--ink-muted)' }}>
-            Showing results for: "{response.freeText}"
-          </p>
+        <div style={{ display: 'grid', gap: 'var(--s3)', textAlign: 'left' }}>
+          <ChipRow>
+            <Badge>showing results for</Badge>
+            <span style={{ fontSize: 13, color: 'var(--ink-muted)' }}>“{response.freeText}”</span>
+          </ChipRow>
           <ListingGrid listings={response.listings} />
         </div>
       )}

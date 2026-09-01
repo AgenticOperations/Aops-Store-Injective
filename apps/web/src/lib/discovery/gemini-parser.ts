@@ -1,5 +1,5 @@
 // apps/web/src/lib/discovery/gemini-parser.ts
-import { discoveryQuerySchema, type DiscoveryQuery } from './schema'
+import { type DiscoveryQuery, discoveryQuerySchema } from './schema'
 
 const GEMINI_TIMEOUT_MS = 6000
 
@@ -8,7 +8,13 @@ const RESPONSE_JSON_SCHEMA = {
   properties: {
     category: {
       type: 'STRING',
-      enum: ['rebalancing', 'grid-trading', 'yield-optimization', 'health-factor-monitoring', 'unknown'],
+      enum: [
+        'rebalancing',
+        'grid-trading',
+        'yield-optimization',
+        'health-factor-monitoring',
+        'unknown',
+      ],
     },
     risk_tolerance: { type: 'STRING', enum: ['low', 'medium', 'high', 'unknown'] },
     budget_ceiling: { type: 'NUMBER' },

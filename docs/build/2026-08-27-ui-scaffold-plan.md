@@ -82,17 +82,17 @@ apps/console/src/
 ## Chunk 1 — design-system
 
 - [x] Add `react` / `react-dom` (catalog) to `@repo/design-system`. Export `./tokens.css` and keep `./components`.
-- [x] Tokens: surveyor-blue on cool paper (`#e8edf2` / `#1c2430` / `#0b6e99` / `#b5472a`). IBM Plex Sans + Plex Mono. Signature: every `Stat` renders `value` + `window` chip; never a bare number. `window` is a required prop, not a convention.
+- [x] Tokens: ~~surveyor-blue on cool paper (`#e8edf2` / `#1c2430` / `#0b6e99` / `#b5472a`)~~ — **superseded 2026-08-29** by the shipped BNB dark/gold theme (`#0a0a0a` paper / `#f2f0ea` ink / `#f0b90b` gold), commits `3baf6a1`+`6dba26e`. The signature rule below is unchanged. IBM Plex Sans + Plex Mono. Signature: every `Stat` renders `value` + `window` chip; never a bare number. `window` is a required prop, not a convention.
 - [x] Primitives listed above. `design-system` imports no service package.
 
 ## Chunk 2 — buyer marketplace (`apps/web`)
 
-- [ ] Depend on `@repo/design-system`. Fixture listings: one `DISCOVERED` (unclaimed), one `LIVE` Low with zero evidence, one `LIVE` Medium rebalancer with KPI windows.
-- [ ] Routes in the file map. Each page header shows `pipeline · engine · design-status`.
-- [ ] Empty evidence uses the distinct "No track record yet" state (`05` §5.2). Never render `0`.
-- [ ] Compare refuses mixed categories (query-layer: if ids span categories, show error, no table).
-- [ ] Hire page: copy that E11 is not wired. No wallet button that pretends to sign.
-- [ ] Active hire: visible Revoke button `disabled` with "Ring 3 not connected".
+- [x] Depend on `@repo/design-system`. Fixture listings: one `DISCOVERED` (unclaimed), one `LIVE` Low with zero evidence, one `LIVE` Medium rebalancer with KPI windows. **Extended**: rebalancing carries three LIVE entries, not one — §9.2's comparability rule is a statement about the relationship between two agents, so one fixture cannot exercise it. `lst-rebal-02`/`03` share a pool and window (directly comparable); `lst-rebal-04` differs on both (caveat path) and carries a low-confidence score (the weak-but-populated third state of `05` §5.2).
+- [x] Routes in the file map. Each page header shows `pipeline · engine · design-status`.
+- [x] Empty evidence uses the distinct "No track record yet" state (`05` §5.2). Never render `0`.
+- [x] Compare refuses mixed categories (query-layer: if ids span categories, show error, no table). Enforced in `lib/compare.ts` as a **return type** — the failure branch has no `listings` field, so no render path can assemble a mixed table. 7 tests.
+- [x] Hire page: copy that E11 is not wired. No wallet button that pretends to sign. Gate-fail shows required vs. current tier side by side (`05` §5.3).
+- [x] Active hire: visible Revoke button `disabled` with "Ring 3 not connected".
 
 ## Chunk 2a — bounded PEAGASIS chat, v1 only (Decision 0004)
 
@@ -107,14 +107,14 @@ apps/console/src/
 
 ## Chunk 3 — builder console (`apps/console`)
 
-- [ ] Same design-system. Zero Ring 3 imports. Console constructs, never signs (`00` / decomposition surfaces note).
-- [ ] Routes in the file map. Sandbox page is opt-in trigger copy, not a fork. Attest page states E4 is an open product call. Config page lists `commercial_config` fields as owner-declared, not session-enforced.
+- [x] Same design-system. Zero Ring 3 imports. Console constructs, never signs (`00` / decomposition surfaces note). Verified by `check:boundaries`.
+- [x] Routes in the file map. Sandbox page is opt-in trigger copy, not a fork. Attest page states E4 is an open product call. Config page lists `commercial_config` fields as owner-declared, not session-enforced — inputs are `disabled` so a typed number cannot be mistaken for a guarantee.
 
 ## Chunk 4 — verify
 
-- [ ] `bun run check:boundaries`
-- [ ] `bun run typecheck --filter=@app/web --filter=@app/console --filter=@repo/design-system`
-- [ ] Click through: unclaimed → claim (console) ; browse → detail → preview → hire (dead end) ; compare same-category ; compare mixed-category error ; active hire revoke disabled ; console sandbox / attest / config / disputes ; chat with clear category text → results match grid's own filter for that category ; chat with ambiguous text → one clarifying question, then results ; chat with `GEMINI_API_KEY` unset/broken → keyword fallback still resolves, no error page.
+- [x] `bun run check:boundaries` — 21 workspaces, 0 forbidden edges.
+- [x] `bun run typecheck --filter=@app/web --filter=@app/console --filter=@repo/design-system` — clean. Also `bun run lint` clean, `bun test` 23/23, and both apps `next build` with every file-map route present.
+- [x] Click through: unclaimed → claim (console) ; browse → detail → preview → hire (dead end) ; compare same-category ; compare mixed-category error ; active hire revoke disabled ; console sandbox / attest / config / disputes ; chat with clear category text → results match grid's own filter for that category ; chat with ambiguous text → one clarifying question, then results ; chat with `GEMINI_API_KEY` unset/broken → keyword fallback still resolves, no error page.
 
 ## Hard stops (build agent)
 
@@ -125,3 +125,24 @@ apps/console/src/
 5. Do not treat unverified PEAGASIS **v2** docs as routes to build (conversation-set weights,
    semantic/vector retrieval). Bounded v1 chat is in scope per Decision 0004 / Chunk 2a.
 6. If a screen needs a product decision (E4, E11 hire-card, zero-evidence floor), render the open question on the page — do not pick a default and hide it.
+
+
+---
+
+## Deviations from the file map, recorded rather than silently absorbed
+
+1. **No `apps/web/src/app/globals.css`.** The file map lists it beside `layout.tsx`, but Chunk 1
+   shipped `layout.tsx` importing `@repo/design-system/tokens.css` directly, and the reset lives in
+   that file. An empty `globals.css` would be a second place for page-level CSS to accumulate,
+   which is the thing having one design-system file was meant to prevent.
+2. **No `packages/design-system/public/components.ts` re-export.** The package's `exports` map
+   points `./components` straight at `components.tsx`, so the import path the map asked to preserve
+   already works and the extra file would be a redirect to nowhere.
+3. **Three additions to `@repo/design-system` beyond Chunk 1's list**: `ScoreMeter` (score and
+   confidence rendered together, since `05` §5.2 forbids showing either alone and both apps need
+   it), `OpenQuestion` (hard stop 6's "render the open question" made into a primitive, so it looks
+   the same on all six screens carrying one), and a `ghost` variant plus a `title` on `Button`
+   (every dead control in this scaffold owes the reader a reason).
+4. **`apps/console/src/fixtures/listings.ts` duplicates shapes from the web app rather than sharing
+   them.** Deliberate, per the plan's own "fixture shapes stay inside the apps" rule — and the two
+   are genuinely different views (buyer sees measured results, owner sees outstanding work).

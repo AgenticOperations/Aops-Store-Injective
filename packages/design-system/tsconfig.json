@@ -2,18 +2,8 @@
   "extends": "../typescript-config/base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "lib": [
-      "ES2023",
-      "DOM"
-    ],
-    "types": [
-      "bun",
-      "react"
-    ]
+    "lib": ["ES2023", "DOM"],
+    "types": ["bun", "react"]
   },
-  "include": [
-    "public/**/*.ts",
-    "public/**/*.tsx",
-    "private/**/*.ts"
-  ]
+  "include": ["public/**/*.ts", "public/**/*.tsx", "private/**/*.ts"]
 }

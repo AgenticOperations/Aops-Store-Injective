@@ -1,6 +1,23 @@
 /**
  * SHARED — no service-package imports. Ever.
  * `@repo/design-system/components`
+ *
+ * ── How to build a page with these ────────────────────────────────────────────────────────────
+ *
+ * A page picks primitives and supplies content. It does not invent spacing, column counts or
+ * heading margins — those live in `tokens.css` and are the reason routes line up with each other.
+ *
+ *   <Shell>                        page frame: sticky header, wash, one measure, one gutter
+ *     <PageHead … />               detail routes: eyebrow + title + badges + lede
+ *     <Hero … />                   landing route only: centred display + one dominant control
+ *     <Section title sub>          the repeating unit — every block of content is one of these
+ *       <Grid cols={2|3|4}>        fixed columns that collapse; never auto-fill
+ *         <Card>                   zoned: Band (state) / Body (claim) / Foot (labels, actions)
+ *       <Panel>                    a bordered block for prose or key-value content
+ *       <StatGrid>                 a row of Stats that agrees with every other row of Stats
+ *
+ * The rule that keeps it honest: if a page needs a layout the primitives cannot express, that is a
+ * missing primitive, not a licence to write another one-off `style={{ gridTemplateColumns: … }}`.
  */
 import type { CSSProperties, ReactNode } from 'react'
 
@@ -20,36 +37,70 @@ function BnbMark() {
   )
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   PAGE FRAME
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * `deco` opts a route into the BNB-mark geometry flanking the fold. It is **off by default and on
+ * only for the landing hero**, because the artwork works by filling the space either side of a
+ * centred column. Inner routes are left-aligned and run the full measure, so the same artwork
+ * lands directly behind headings and body copy — which is a legibility cost paid for atmosphere,
+ * and the wrong trade on pages whose entire job is presenting numbers a buyer has to trust.
+ */
 export function Shell({
   product,
   nav,
+  deco,
   children,
 }: {
   product: string
   nav: ReactNode
+  deco?: boolean
   children: ReactNode
 }) {
   return (
-    <div style={layout.page}>
-      <header style={layout.header}>
-        <div style={layout.headerInner}>
-          <a href="/" style={layout.brand}>
+    <div className="ds-page">
+      {/* The left and right artworks are genuinely different — not one asset mirrored — so each
+          edge gets its own file, and each has a narrower crop that swaps in below 1200px. The art
+          ships pre-dimmed (dark grey on transparency), so it renders near full opacity; dimming it
+          further is what made an earlier pass invisible. Decorative, so aria-hidden throughout. */}
+      {deco && (
+        <>
+          <picture>
+            <source srcSet="/bnb-back-left3.png" media="(max-width: 1200px)" />
+            <img src="/bnb-back-left2.png" alt="" aria-hidden="true" className="ds-deco is-left" />
+          </picture>
+          <picture>
+            <source srcSet="/bnb-back-right3.png" media="(max-width: 1200px)" />
+            <img
+              src="/bnb-back-right2.png"
+              alt=""
+              aria-hidden="true"
+              className="ds-deco is-right"
+            />
+          </picture>
+        </>
+      )}
+      <header className="ds-header">
+        <div className="ds-header__inner">
+          <a href="/" className="ds-brand">
             <BnbMark />
             {product}
           </a>
           {nav}
         </div>
       </header>
-      <div style={layout.main}>{children}</div>
+      <div className="ds-main">{children}</div>
     </div>
   )
 }
 
 export function Nav({ items }: { items: { href: string; label: string }[] }) {
   return (
-    <nav style={layout.nav}>
+    <nav className="ds-nav">
       {items.map((item) => (
-        <a key={item.href} href={item.href} style={layout.navLink}>
+        <a key={item.href} href={item.href}>
           {item.label}
         </a>
       ))}
@@ -57,6 +108,12 @@ export function Nav({ items }: { items: { href: string; label: string }[] }) {
   )
 }
 
+/**
+ * The pipeline instrument strip — this product's one signature motif, and the only decoration in
+ * the system that is allowed to be decoration. It states which of the five pipelines a screen
+ * belongs to and how finished that engine is, so a reader always knows whether what they are
+ * looking at is measured, scaffolded or deliberately dead.
+ */
 export function EngineRail({
   pipeline,
   engine,
@@ -77,6 +134,206 @@ export function EngineRail({
     </p>
   )
 }
+
+/**
+ * The landing route's opening. One display line, one supporting sentence, one dominant control —
+ * the control is a slot rather than a prop because the landing page's search box owns its own
+ * client state and this component must stay a server-renderable shell.
+ */
+export function Hero({
+  title,
+  lede,
+  children,
+}: {
+  title: ReactNode
+  lede?: string
+  children?: ReactNode
+}) {
+  return (
+    <section className="ds-hero">
+      <h1>{title}</h1>
+      {lede && <p className="ds-hero__lede">{lede}</p>}
+      {children && <div className="ds-hero__slot">{children}</div>}
+    </section>
+  )
+}
+
+/**
+ * Detail-route header. `lede` is one sentence saying what the reader is looking at — required by
+ * convention, not by type, because a detail page that cannot say what it shows in one sentence
+ * usually has a content problem rather than a layout one.
+ */
+export function PageHead({
+  pipeline,
+  engine,
+  status,
+  title,
+  meta,
+  lede,
+}: {
+  pipeline: string
+  engine: string
+  status: string
+  title: ReactNode
+  meta?: ReactNode
+  lede?: ReactNode
+}) {
+  return (
+    <div className="ds-pagehead">
+      <EngineRail pipeline={pipeline} engine={engine} status={status} />
+      <h1>{title}</h1>
+      {meta && <div className="ds-pagehead__meta">{meta}</div>}
+      {lede && <p className="ds-pagehead__lede">{lede}</p>}
+    </div>
+  )
+}
+
+/**
+ * The repeating unit of every page. `sub` is the one-line explanation under the title — the
+ * reference layout uses this pairing on every block, and it does more for scannability than any
+ * amount of card styling, because it lets a reader skip a whole section on one line.
+ */
+export function Section({
+  title,
+  sub,
+  action,
+  children,
+}: {
+  title?: string
+  sub?: string
+  action?: ReactNode
+  children: ReactNode
+}) {
+  return (
+    <section className="ds-section">
+      {(title || action) && (
+        <div className="ds-section__head">
+          <div>
+            {title && <h2>{title}</h2>}
+            {sub && <p className="ds-section__sub">{sub}</p>}
+          </div>
+          {action}
+        </div>
+      )}
+      {children}
+    </section>
+  )
+}
+
+export function Grid({ cols = 2, children }: { cols?: 2 | 3 | 4; children: ReactNode }) {
+  return <div className={`ds-grid cols-${cols}`}>{children}</div>
+}
+
+export function Panel({ quiet, children }: { quiet?: boolean; children: ReactNode }) {
+  return <div className={quiet ? 'ds-panel is-quiet' : 'ds-panel'}>{children}</div>
+}
+
+export function Prose({ children }: { children: ReactNode }) {
+  return <div className="ds-prose">{children}</div>
+}
+
+export function Note({ children }: { children: ReactNode }) {
+  return <p className="ds-note">{children}</p>
+}
+
+export function ChipRow({ children }: { children: ReactNode }) {
+  return <div className="ds-chiprow">{children}</div>
+}
+
+export function Actions({ centered, children }: { centered?: boolean; children: ReactNode }) {
+  return <div className={centered ? 'ds-actions is-centered' : 'ds-actions'}>{children}</div>
+}
+
+/**
+ * A centred row of headline figures split by hairlines — the reference's closing move on the
+ * fold. Deliberately separate from `Stat`: these are counts of the marketplace itself, not
+ * measurements of an agent, so they carry no observation window and must not look like they do.
+ */
+export function StatBar({ items }: { items: { value: string; label: string }[] }) {
+  return (
+    <div className="ds-statbar">
+      {items.map((item) => (
+        <div key={item.label}>
+          <div className="ds-statbar__value">{item.value}</div>
+          <div className="ds-statbar__label">{item.label}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function StatGrid({ boxed, children }: { boxed?: boolean; children: ReactNode }) {
+  return <div className={boxed ? 'ds-stats is-boxed' : 'ds-stats'}>{children}</div>
+}
+
+export function DefList({ rows }: { rows: { label: string; value: ReactNode }[] }) {
+  return (
+    <dl className="ds-deflist">
+      {rows.map((row) => (
+        <div key={row.label}>
+          <dt>{row.label}</dt>
+          <dd>{row.value}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+export function Scroller({ children }: { children: ReactNode }) {
+  return <div className="ds-scroll">{children}</div>
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   CARD — a zoned surface
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Pass `href` to make the whole card a control (a category tile, a filter). Otherwise compose
+ * `CardBand` / `CardBody` / `CardFoot` inside it. `plain` collapses the anatomy back to a single
+ * padded box for the cases that genuinely have one zone.
+ */
+export function Card({
+  children,
+  href,
+  active,
+  plain,
+}: {
+  children: ReactNode
+  href?: string
+  active?: boolean
+  plain?: boolean
+}) {
+  const className = ['ds-card', plain || href ? 'is-plain' : '', active ? 'is-active' : '']
+    .filter(Boolean)
+    .join(' ')
+
+  if (href) {
+    return (
+      <a href={href} className={className} aria-current={active ? 'true' : undefined}>
+        {children}
+      </a>
+    )
+  }
+  return <article className={className}>{children}</article>
+}
+
+/** The card's state zone: what this thing *is* right now, before any claim about how good it is. */
+export function CardBand({ children }: { children: ReactNode }) {
+  return <div className="ds-card__band">{children}</div>
+}
+
+export function CardBody({ children }: { children: ReactNode }) {
+  return <div className="ds-card__body">{children}</div>
+}
+
+/** Separated by a dashed rule: labels and actions, never measurements. */
+export function CardFoot({ children }: { children: ReactNode }) {
+  return <div className="ds-card__foot">{children}</div>
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════
+   CONTENT PRIMITIVES
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
 
 const BADGE_TONE = {
   neutral: {
@@ -124,34 +381,6 @@ export function Badge({
 }
 
 /**
- * Static block by default. Pass `href` to make it a clickable filter control (e.g. a category
- * tab) — `active` marks the one currently selected, since a filter control must show its own
- * state the same way a nav link would.
- */
-export function Card({
-  children,
-  href,
-  active,
-}: {
-  children: ReactNode
-  href?: string
-  active?: boolean
-}) {
-  if (href) {
-    return (
-      <a
-        href={href}
-        className={active ? 'ds-card is-active' : 'ds-card'}
-        aria-current={active ? 'true' : undefined}
-      >
-        {children}
-      </a>
-    )
-  }
-  return <article className="ds-card">{children}</article>
-}
-
-/**
  * `window` is required, not optional. The plan's own rule: every Stat renders value + window
  * chip, never a bare number (03 §7.3 — a metric without its observation window is not honest).
  * Enforced by the type, not by a comment callers can skip.
@@ -175,6 +404,79 @@ export function Stat({
       </div>
       <div style={layout.window}>window {window}</div>
     </div>
+  )
+}
+
+/**
+ * Score and confidence, rendered together and never apart (`architecture/05` §5.2 — a high score
+ * at low confidence must never render indistinguishably from a high-confidence one). The two
+ * populated states are visually distinct by construction: below the threshold the value is muted
+ * and the confidence bar is drawn in the caution colour, so "weak" is legible at a glance rather
+ * than only on reading the number. The third state — no evidence at all — is not this component's
+ * job: callers render `EmptyState` instead, so there is no code path that turns absent into 0.
+ */
+export function ScoreMeter({
+  value,
+  confidence,
+  sampleSize,
+  window,
+}: {
+  value: number
+  /** 0–1. */
+  confidence: number
+  sampleSize: number
+  window: string
+}) {
+  const weak = confidence < 0.5
+  const pct = Math.round(confidence * 100)
+  return (
+    <div style={layout.stat}>
+      <div style={layout.statLabel}>Score · confidence</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+        <span
+          style={{
+            ...layout.statValue,
+            color: weak ? 'var(--ink-muted)' : 'var(--ink)',
+          }}
+        >
+          {value}
+        </span>
+        <span style={{ ...layout.statLabel, textTransform: 'none' }}>
+          {weak ? 'low confidence' : 'confidence'} {pct}%
+        </span>
+      </div>
+      <div
+        className="ds-meter"
+        role="img"
+        aria-label={`Confidence ${pct} percent from ${sampleSize} observations`}
+      >
+        <span
+          style={{
+            width: `${pct}%`,
+            background: weak ? 'var(--warn)' : 'var(--live)',
+          }}
+        />
+      </div>
+      <div style={layout.window}>
+        n={sampleSize} · window {window}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * A question the design has not answered yet, rendered where the answer would go. Hard stop 6 of
+ * the scaffold plan: a screen blocked on a product decision shows the open question rather than
+ * quietly picking a default, because a hidden default is indistinguishable from a decision.
+ */
+export function OpenQuestion({ id, children }: { id: string; children: ReactNode }) {
+  return (
+    <aside style={{ ...layout.banner, borderLeftColor: 'var(--warn)' }}>
+      <span style={{ ...layout.badge, background: 'var(--chip)', color: 'var(--warn)' }}>
+        OPEN QUESTION · {id}
+      </span>
+      <div style={{ marginTop: 6 }}>{children}</div>
+    </aside>
   )
 }
 
@@ -203,67 +505,49 @@ export function Banner({
   return <aside style={{ ...layout.banner, borderLeftColor: border }}>{children}</aside>
 }
 
+/**
+ * `title` is required whenever `disabled` is set. Every disabled control in this scaffold is
+ * disabled for a *reason the buyer is owed* — "Ring 3 not connected", "E11 not wired" — and a
+ * dead control with no explanation reads as a bug rather than as a deliberate boundary.
+ */
 export function Button({
   href,
   disabled,
+  variant = 'primary',
+  title,
   type = 'button',
   children,
 }: {
   href?: string
   disabled?: boolean
+  variant?: 'primary' | 'ghost'
+  title?: string
   type?: 'button' | 'submit'
   children: ReactNode
 }) {
+  const className = variant === 'ghost' ? 'ds-button is-ghost' : 'ds-button'
   if (href) {
     return (
-      <a href={href} className="ds-button" aria-disabled={disabled}>
+      <a href={href} className={className} aria-disabled={disabled} title={title}>
         {children}
       </a>
     )
   }
   return (
-    <button type={type} className="ds-button" disabled={disabled}>
+    <button type={type} className={className} disabled={disabled} title={title}>
       {children}
     </button>
   )
 }
 
 const layout: Record<string, CSSProperties> = {
-  page: { minHeight: '100vh' },
-  header: {
-    borderBottom: '1px solid var(--rule)',
-    background: 'var(--paper-2)',
-  },
-  headerInner: {
-    maxWidth: 'var(--max)',
-    margin: '0 auto',
-    padding: '12px 20px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 16,
-    flexWrap: 'wrap',
-  },
-  brand: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    color: 'var(--ink)',
-    textDecoration: 'none',
-    fontWeight: 600,
-    fontSize: 15,
-    letterSpacing: '-0.01em',
-  },
-  nav: { display: 'flex', gap: 16, flexWrap: 'wrap' },
-  navLink: { color: 'var(--ink-muted)', textDecoration: 'none', fontSize: 14 },
-  main: { maxWidth: 'var(--max)', margin: '0 auto', padding: '28px 20px 64px' },
   rail: {
     fontFamily: 'var(--mono)',
     fontSize: 12,
     color: 'var(--ink-muted)',
     letterSpacing: '0.04em',
     textTransform: 'uppercase',
-    margin: '0 0 20px',
+    margin: 0,
     display: 'flex',
     alignItems: 'center',
     gap: 8,
@@ -271,14 +555,16 @@ const layout: Record<string, CSSProperties> = {
   },
   badge: {
     display: 'inline-block',
+    justifySelf: 'start',
     fontFamily: 'var(--mono)',
     fontSize: 11,
     letterSpacing: '0.06em',
     textTransform: 'uppercase',
-    padding: '2px 8px',
-    borderRadius: 2,
+    padding: '4px 11px',
+    borderRadius: 'var(--r-pill)',
+    whiteSpace: 'nowrap',
   },
-  stat: { display: 'grid', gap: 2 },
+  stat: { display: 'grid', gap: 2, minWidth: 0 },
   statLabel: {
     fontFamily: 'var(--mono)',
     fontSize: 11,
@@ -286,22 +572,30 @@ const layout: Record<string, CSSProperties> = {
     textTransform: 'uppercase',
     color: 'var(--ink-muted)',
   },
-  statValue: { fontSize: 20, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em' },
+  statValue: {
+    fontFamily: 'var(--display)',
+    fontSize: 26,
+    fontWeight: 500,
+    lineHeight: 1.1,
+    fontVariantNumeric: 'tabular-nums',
+    letterSpacing: '-0.03em',
+  },
   window: {
     fontFamily: 'var(--mono)',
     fontSize: 11,
-    color: 'var(--gold-bright)',
-    background: 'color-mix(in srgb, var(--gold) 14%, transparent)',
-    border: '1px solid color-mix(in srgb, var(--gold) 32%, transparent)',
-    padding: '1px 6px',
+    letterSpacing: '0.02em',
+    color: 'color-mix(in srgb, var(--gold-bright) 78%, var(--ink-muted))',
     width: 'fit-content',
   },
   empty: {
     border: '1px dashed var(--rule)',
-    padding: 20,
+    borderRadius: 'var(--r-panel)',
+    padding: 'var(--s6)',
     display: 'grid',
     gap: 8,
-    background: 'var(--paper)',
+    background: 'var(--paper-2)',
+    textAlign: 'center',
+    justifyItems: 'center',
   },
   emptyStamp: {
     fontFamily: 'var(--mono)',
@@ -309,11 +603,13 @@ const layout: Record<string, CSSProperties> = {
     letterSpacing: '0.14em',
     color: 'var(--warn)',
   },
-  muted: { margin: 0, color: 'var(--ink-muted)' },
+  muted: { margin: 0, color: 'var(--ink-muted)', maxWidth: '52ch' },
   banner: {
     borderLeft: '3px solid',
+    borderRadius: '0 var(--r-panel) var(--r-panel) 0',
     background: 'var(--paper-2)',
-    padding: '10px 14px',
-    fontSize: 14,
+    padding: 'var(--s4) var(--s5)',
+    fontSize: 15,
+    color: 'var(--ink-soft)',
   },
 }

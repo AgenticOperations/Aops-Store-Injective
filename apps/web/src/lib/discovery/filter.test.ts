@@ -12,7 +12,14 @@ describe('filterListings', () => {
 
   test('excludes DISCOVERED (unclaimed) listings — not hireable yet', () => {
     const results = filterListings(FIXTURE_LISTINGS, { category: 'rebalancing' })
-    expect(results).toHaveLength(0)
+    // Rebalancing has four fixtures; lst-rebal-01 is DISCOVERED and must never reach the grid,
+    // because the unclaimed directory is explicitly not part of discovery (01 §3).
+    expect(results.map((listing) => listing.id)).toEqual([
+      'lst-rebal-02',
+      'lst-rebal-03',
+      'lst-rebal-04',
+    ])
+    expect(results.every((listing) => listing.status === 'LIVE')).toBe(true)
   })
 
   test('filters by minimum trust tier when provided', () => {

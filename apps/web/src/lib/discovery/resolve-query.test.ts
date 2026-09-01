@@ -63,9 +63,14 @@ describe('resolveDiscoveryQuery', () => {
     const result = await resolveDiscoveryQuery({
       freeText: 'rebalance my LP range',
       listings: FIXTURE_LISTINGS,
-      parseWithGemini: async () => baseQuery({ category: 'rebalancing' }),
+      parseWithGemini: async () =>
+        baseQuery({
+          category: 'rebalancing',
+          capability_requirements: ['uniswap-v4'],
+        }),
     })
-    // rebalancing's only fixture is DISCOVERED, not LIVE — filterListings excludes it
+    // No rebalancing fixture declares that capability, so the filter narrows to nothing. The
+    // surface must render its empty state rather than treat "no match" as a failure.
     expect(result.kind).toBe('results')
     if (result.kind === 'results') expect(result.listings).toEqual([])
   })

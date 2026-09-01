@@ -4,9 +4,7 @@ import type { DiscoveryQuery } from './schema'
 
 const TRUST_RANK: Record<TrustTier, number> = { Low: 0, Medium: 1, High: 2 }
 
-export type FilterInput = Partial<
-  Pick<DiscoveryQuery, 'category' | 'capability_requirements'>
-> & {
+export type FilterInput = Partial<Pick<DiscoveryQuery, 'category' | 'capability_requirements'>> & {
   category: DiscoveryQuery['category'] | NonNullable<DiscoveryQuery['category']>
   minTrustTier?: TrustTier
   capabilityRequirements?: string[]
