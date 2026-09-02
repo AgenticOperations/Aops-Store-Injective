@@ -1,0 +1,73 @@
+/* Search bar: input field grows, button stays pinned on the right. */
+
+.ds-searchbar.discover-search {
+  align-items: stretch;
+}
+
+.ds-searchbar.discover-search .discover-search__field {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 100%;
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+
+.ds-searchbar.discover-search .discover-search__field .ds-input {
+  width: 100%;
+  position: relative;
+  z-index: 2;
+  background: transparent;
+}
+
+.ds-searchbar.discover-search .discover-search__action {
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+.discover-search__ghost {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  font-size: 16px;
+  line-height: 1.4;
+  color: #6d6d6d;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.discover-search__ghost-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.discover-search__cursor {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: 1px;
+  height: 1.1em;
+  margin-left: 1px;
+  background: #6d6d6d;
+  animation: discover-search-blink 1s step-end infinite;
+}
+
+@keyframes discover-search-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .discover-search__cursor {
+    animation: none;
+    opacity: 0.6;
+  }
+}

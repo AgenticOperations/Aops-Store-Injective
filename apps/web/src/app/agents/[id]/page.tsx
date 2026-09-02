@@ -11,14 +11,15 @@ import {
   ScoreMeter,
   Scroller,
   Section,
-  Shell,
+
   Stat,
   StatGrid,
 } from '@repo/design-system/components'
 import { notFound } from 'next/navigation'
 import { EvidenceTimeline } from '../../../components/evidence-timeline'
 import { EvidenceVector } from '../../../components/evidence-vector'
-import { SiteNav } from '../../../components/site-nav'
+import { SiteShell } from '../../../components/site-shell'
+
 import { TrustLadder } from '../../../components/trust-ladder'
 import { fetchListingView } from '../../../lib/listing-view'
 
@@ -41,7 +42,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const { kpis } = listing
 
   return (
-    <Shell product="Aops Store" nav={<SiteNav />}>
+    <SiteShell>
       <PageHead
         pipeline="② PROOF · ③ DEMAND"
         engine="E6 · Evidence + Scoring"
@@ -306,6 +307,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </Panel>
         </Grid>
       </Section>
-    </Shell>
+    </SiteShell>
   )
 }

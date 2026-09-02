@@ -50,13 +50,17 @@ function BnbMark() {
  */
 export function Shell({
   product,
+  brand,
   nav,
   deco,
+  headerClassName,
   children,
 }: {
-  product: string
+  product?: string
+  brand?: ReactNode
   nav: ReactNode
   deco?: boolean
+  headerClassName?: string
   children: ReactNode
 }) {
   return (
@@ -82,11 +86,15 @@ export function Shell({
           </picture>
         </>
       )}
-      <header className="ds-header">
+      <header className={headerClassName ? `ds-header ${headerClassName}` : 'ds-header'}>
         <div className="ds-header__inner">
           <a href="/" className="ds-brand">
-            <BnbMark />
-            {product}
+            {brand ?? (
+              <>
+                <BnbMark />
+                {product}
+              </>
+            )}
           </a>
           {nav}
         </div>

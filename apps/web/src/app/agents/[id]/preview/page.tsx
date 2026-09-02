@@ -9,12 +9,13 @@ import {
   Panel,
   Scroller,
   Section,
-  Shell,
+
   Stat,
   StatGrid,
 } from '@repo/design-system/components'
 import { notFound } from 'next/navigation'
-import { SiteNav } from '../../../../components/site-nav'
+import { SiteShell } from '../../../../components/site-shell'
+
 import { findListing } from '../../../../fixtures/listings'
 import { FIXTURE_PREVIEWS } from '../../../../fixtures/preview'
 
@@ -38,7 +39,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const preview = FIXTURE_PREVIEWS[id]
 
   return (
-    <Shell product="Aops Store" nav={<SiteNav />}>
+    <SiteShell>
       <PageHead
         pipeline="③ DEMAND"
         engine="E10 · Simulate"
@@ -173,6 +174,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </Actions>
         </div>
       </Section>
-    </Shell>
+    </SiteShell>
   )
 }

@@ -34,7 +34,13 @@ const plexMono = IBM_Plex_Mono({
   display: 'swap',
 })
 
-export const metadata = { title: 'Aops Store' }
+export const metadata = {
+  title: 'Aops Store',
+  icons: {
+    icon: '/aops-tab-icon.png',
+    apple: '/aops-tab-icon.png',
+  },
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

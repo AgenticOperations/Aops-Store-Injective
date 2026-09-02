@@ -7,9 +7,9 @@ import {
   PageHead,
   Scroller,
   Section,
-  Shell,
 } from '@repo/design-system/components'
-import { SiteNav } from '../../components/site-nav'
+import { SiteShell } from '../../components/site-shell'
+
 import type { Listing } from '../../fixtures/listings'
 import { DOMAIN_CATEGORIES, domainCategoryToHyphen } from '../../lib/api'
 import { resolveComparison } from '../../lib/compare'
@@ -77,7 +77,7 @@ export default async function Page({
   const result = await resolveComparison(params.ids)
 
   return (
-    <Shell product="Aops Store" nav={<SiteNav />}>
+    <SiteShell>
       <PageHead
         pipeline="③ DEMAND"
         engine="E10 · Compare"
@@ -208,6 +208,6 @@ export default async function Page({
           </Section>
         </>
       )}
-    </Shell>
+    </SiteShell>
   )
 }

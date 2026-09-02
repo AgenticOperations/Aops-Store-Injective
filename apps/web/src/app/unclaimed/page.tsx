@@ -11,9 +11,8 @@ import {
   Grid,
   PageHead,
   Section,
-  Shell,
 } from '@repo/design-system/components'
-import { SiteNav } from '../../components/site-nav'
+import { SiteShell } from '../../components/site-shell'
 import { listListings, domainCategoryToHyphen } from '../../lib/api'
 
 const CONSOLE_URL = process.env.NEXT_PUBLIC_CONSOLE_URL ?? 'http://localhost:3002'
@@ -28,7 +27,7 @@ export default async function Page() {
   }
 
   return (
-    <Shell product="Aops Store" nav={<SiteNav />}>
+    <SiteShell>
       <PageHead
         pipeline="① SUPPLY"
         engine="E1 · Ingestion"
@@ -94,6 +93,6 @@ export default async function Page() {
           </Grid>
         )}
       </Section>
-    </Shell>
+    </SiteShell>
   )
 }

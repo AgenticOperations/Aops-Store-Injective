@@ -4,6 +4,8 @@ import { Badge, Banner, Button, ChipRow } from '@repo/design-system/components'
 import { useState } from 'react'
 import type { Listing } from '../fixtures/listings'
 import { ListingGrid } from './listing-grid'
+import { useTypewriterLoop } from './use-typewriter-loop'
+import './discover-chat.css'
 
 type DiscoverResponse =
   | { kind: 'results'; listings: Listing[]; resolvedVia: 'gemini' | 'keyword'; freeText: string }
@@ -11,13 +13,13 @@ type DiscoverResponse =
 
 const NETWORK_ERROR_MESSAGE = "Couldn't reach the search. Check your connection and try again."
 
-/** Real sentences a buyer would actually type, one per mandated category. */
-const EXAMPLES = [
+/** Example buyer queries — loop in the search field when idle. */
+const SEARCH_PROMPTS = [
   'protect my Venus position from liquidation',
   'keep my CAKE/BNB position in range',
   'run a grid on BNB/USDT',
-  'find the best stablecoin yield',
-]
+  'find the best stablecoin yield on BNB Chain',
+] as const
 
 /**
  * Bounded chat surface (Decision 0004). This box is an alternate INPUT to the same filter the
@@ -26,9 +28,13 @@ const EXAMPLES = [
  */
 export function DiscoverChat() {
   const [text, setText] = useState('')
+  const [focused, setFocused] = useState(false)
   const [response, setResponse] = useState<DiscoverResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const showTypewriter = text.length === 0 && !focused
+  const typewriterText = useTypewriterLoop(SEARCH_PROMPTS, showTypewriter)
 
   async function submit(query: string) {
     if (!query.trim()) return
@@ -61,22 +67,34 @@ export function DiscoverChat() {
           event.preventDefault()
           void submit(text)
         }}
-        className="ds-searchbar"
+        className="ds-searchbar discover-search"
       >
-        <input
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          placeholder="Describe what you need in your own words…"
-          aria-label="Describe what you need"
-          className="ds-input"
-        />
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Thinking…' : 'Find an agent'}
-        </Button>
+        <div className="discover-search__field">
+          <input
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            placeholder={showTypewriter ? ' ' : 'Describe what you need in your own words…'}
+            aria-label="Describe what you need"
+            className="ds-input"
+          />
+          {showTypewriter && (
+            <span className="discover-search__ghost" aria-hidden="true">
+              <span className="discover-search__ghost-text">{typewriterText}</span>
+              <span className="discover-search__cursor" />
+            </span>
+          )}
+        </div>
+        <div className="discover-search__action">
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Thinking…' : 'Find an agent'}
+          </Button>
+        </div>
       </form>
 
       <ChipRow>
-        {EXAMPLES.map((example) => (
+        {SEARCH_PROMPTS.map((example) => (
           <button
             key={example}
             type="button"

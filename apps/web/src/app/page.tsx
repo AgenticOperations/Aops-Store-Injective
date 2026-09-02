@@ -1,7 +1,7 @@
-import { Button, Card, Grid, Section, Shell, StatBar } from '@repo/design-system/components'
+import { Button, Card, Grid, Section, StatBar } from '@repo/design-system/components'
 import { HomeHero } from '../components/home-hero'
 import { ListingGrid } from '../components/listing-grid'
-import { SiteNav } from '../components/site-nav'
+import { SiteShell } from '../components/site-shell'
 import { fetchCategoryListingViews, fetchMarketStats } from '../lib/api'
 
 const CATEGORIES = [
@@ -42,15 +42,15 @@ export default async function Page({
   ])
 
   return (
-    <Shell product="Aops Store" nav={<SiteNav />} deco>
+    <SiteShell deco>
       <HomeHero
         title={
           <>
-            <span className="ds-accent">Measured.</span>
+            <span className="ds-accent">Find Agents.</span>
            
           </>
         }
-        lede="An agent marketplace for BNB Chain where every number is computed by us from the chain — never from what an agent says about itself. Say what you need, or browse the four categories."
+        lede="Find agents. Trust the chain. Built for BNB"
       />
 
       <StatBar
@@ -97,6 +97,6 @@ export default async function Page({
           <ListingGrid listings={results} />
         </Section>
       )}
-    </Shell>
+    </SiteShell>
   )
 }

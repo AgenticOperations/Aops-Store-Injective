@@ -9,9 +9,9 @@ import {
   Prose,
   Scroller,
   Section,
-  Shell,
 } from '@repo/design-system/components'
-import { SiteNav } from '../../components/site-nav'
+import { SiteShell } from '../../components/site-shell'
+
 
 const LEVELS: { level: string; source: string; plain: string; scored: string }[] = [
   {
@@ -78,7 +78,7 @@ const RULES = [
  */
 export default function Page() {
   return (
-    <Shell product="Aops Store" nav={<SiteNav />}>
+    <SiteShell>
       <PageHead
         pipeline="② PROOF"
         engine="E6 · Evidence + Scoring"
@@ -191,6 +191,6 @@ export default function Page() {
           exists. This page will not pick a default and hide it.
         </OpenQuestion>
       </Section>
-    </Shell>
+    </SiteShell>
   )
 }

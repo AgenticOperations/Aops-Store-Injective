@@ -10,12 +10,13 @@ import {
   Panel,
   Scroller,
   Section,
-  Shell,
+
   Stat,
   StatGrid,
 } from '@repo/design-system/components'
 import { notFound } from 'next/navigation'
-import { SiteNav } from '../../../../components/site-nav'
+import { SiteShell } from '../../../../components/site-shell'
+
 import { fetchListingView } from '../../../../lib/listing-view'
 import type { TrustTier } from '../../../../fixtures/listings'
 
@@ -54,7 +55,7 @@ export default async function Page({
   const notClaimed = listing.status !== 'LIVE'
 
   return (
-    <Shell product="Aops Store" nav={<SiteNav />}>
+    <SiteShell>
       <PageHead
         pipeline="④ TRANSACTION"
         engine="E11 · Risk + Permission"
@@ -216,6 +217,6 @@ export default async function Page({
           </Actions>
         </div>
       </Section>
-    </Shell>
+    </SiteShell>
   )
 }

@@ -20,6 +20,18 @@
   padding: clamp(var(--s7), 8vw, 120px) 0 var(--s8);
 }
 
+.home-hero .ds-hero__lede {
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 48ch;
+}
+
+@media (min-width: 1024px) {
+  .home-hero .ds-hero__lede {
+    font-size: 15px;
+  }
+}
+
 .home-hero__visual {
   position: absolute;
   left: 50%;

@@ -1,0 +1,156 @@
+/**
+ * Marketplace header — floating pill bar, grouped nav, chain context on the rail.
+ * Keeps buyer routes primary; methodology reads as trust/docs, not another tab.
+ */
+
+.web-header {
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom: none;
+  padding: var(--s3) var(--gutter) 0;
+}
+
+.web-header .ds-header__inner {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 6px 6px 6px 14px;
+  gap: var(--s4);
+  border: 1px solid color-mix(in srgb, var(--rule) 88%, var(--gold) 12%);
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--paper-2) 92%, transparent);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--ink) 6%, transparent) inset,
+    0 12px 40px rgb(0 0 0 / 35%);
+}
+
+.web-header .ds-brand {
+  padding-right: var(--s2);
+  border-right: 1px solid var(--rule-soft);
+  margin-right: 2px;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-end;
+}
+
+.site-nav__primary {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.site-nav__link {
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  padding: 8px 14px;
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+  transition:
+    color 150ms var(--ease),
+    background-color 150ms var(--ease),
+    box-shadow 150ms var(--ease);
+}
+
+.site-nav__link:hover {
+  color: var(--ink-soft);
+  background: color-mix(in srgb, var(--chip) 85%, transparent);
+}
+
+.site-nav__link.is-active {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--gold) 14%, var(--chip));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 28%, transparent);
+}
+
+.site-nav__link--muted {
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+
+.site-nav__link--muted.is-active {
+  color: var(--ink-soft);
+  background: var(--chip);
+  box-shadow: none;
+}
+
+.site-nav__rail {
+  width: 1px;
+  height: 22px;
+  background: var(--rule);
+  flex-shrink: 0;
+  margin: 0 var(--s1);
+}
+
+.site-nav__network {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  padding: 0 var(--s1);
+}
+
+.site-nav__network-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--gold) 55%, transparent);
+}
+
+@media (max-width: 900px) {
+  .web-header .ds-header__inner {
+    flex-wrap: wrap;
+    border-radius: var(--r-card);
+    padding: var(--s3);
+  }
+
+  .web-header .ds-brand {
+    border-right: none;
+    margin-right: 0;
+    padding-right: 0;
+    flex: 1 1 auto;
+  }
+
+  .site-nav {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: var(--s1);
+  }
+
+  .site-nav__rail,
+  .site-nav__network {
+    display: none;
+  }
+
+  .site-nav__link {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-nav__primary {
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav__link {
+    transition: none;
+  }
+}

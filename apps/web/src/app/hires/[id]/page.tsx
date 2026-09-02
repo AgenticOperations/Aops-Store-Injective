@@ -8,10 +8,10 @@ import {
   PageHead,
   Panel,
   Section,
-  Shell,
 } from '@repo/design-system/components'
+import { SiteShell } from '../../../components/site-shell'
 import { notFound } from 'next/navigation'
-import { SiteNav } from '../../../components/site-nav'
+
 import { getJob } from '../../../lib/api'
 import { fetchListingView } from '../../../lib/listing-view'
 
@@ -23,7 +23,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const listing = await fetchListingView(job.listingId)
 
   return (
-    <Shell product="Aops Store" nav={<SiteNav />}>
+    <SiteShell>
       <PageHead
         pipeline="④ TRANSACTION"
         engine="E12 · Hiring + Job"
@@ -114,6 +114,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </Button>
         </Actions>
       </Section>
-    </Shell>
+    </SiteShell>
   )
 }
