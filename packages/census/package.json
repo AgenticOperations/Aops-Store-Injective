@@ -19,5 +19,8 @@
   "devDependencies": {
     "typescript": "catalog:",
     "@types/bun": "catalog:"
+  },
+  "dependencies": {
+    "zod": "catalog:"
   }
 }

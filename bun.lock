@@ -93,6 +93,9 @@
     "packages/census": {
       "name": "@repo/census",
       "version": "0.0.0",
+      "dependencies": {
+        "zod": "catalog:",
+      },
       "devDependencies": {
         "@types/bun": "catalog:",
         "typescript": "catalog:",
@@ -114,6 +117,7 @@
       "name": "@repo/database",
       "version": "0.0.0",
       "dependencies": {
+        "@repo/domain": "workspace:*",
         "drizzle-orm": "catalog:",
         "postgres": "catalog:",
         "zod": "catalog:",
