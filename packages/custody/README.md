@@ -8,6 +8,7 @@ RING 3. Session construction, scope encoding, revocation. The blast radius the b
 
 - `@repo/custody/sessions`
 - `@repo/custody/keys`
+- `@repo/custody/vendor-facts`
 
 `private/` is not listed in `exports` and is therefore unreachable from outside this
 package — by module resolution, not by convention (00 §3.1).

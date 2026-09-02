@@ -10,7 +10,8 @@
   },
   "exports": {
     "./sessions": "./public/sessions.ts",
-    "./keys": "./public/keys.ts"
+    "./keys": "./public/keys.ts",
+    "./vendor-facts": "./public/vendor-facts.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
