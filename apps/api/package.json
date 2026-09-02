@@ -5,8 +5,8 @@
   "type": "module",
   "ring": "app",
   "scripts": {
-    "dev": "bun --watch src/main.ts",
-    "start": "bun src/main.ts",
+    "dev": "bun --env-file=../../.env --watch src/main.ts",
+    "start": "bun --env-file=../../.env src/main.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },

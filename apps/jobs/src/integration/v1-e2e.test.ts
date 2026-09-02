@@ -1,10 +1,14 @@
 /**
  * Chunk 6 — scripted v1 integration path.
  * Skips when DATABASE_URL unset. Runs PLAIN + ALTANA_SESSION control paths.
+ *
+ * Uses migrate + TRUNCATE (not DROP SCHEMA) so this runs safely against a remote Neon
+ * instance. DROP SCHEMA is reserved for disposable local Postgres only.
  */
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { createDbClient } from '@repo/database/client'
 import { agentScores, authorizations, evidence, jobs, listings } from '@repo/database/schema'
+import * as schema from '@repo/database/schema'
 import { bindSession, type ReadKeystoreEntry } from '@repo/access/bind-session'
 import { createChallenge, enroll, NonceStore } from '@repo/access/enrollment'
 import { closeAltanaSession, releasePlainEscrow } from '@repo/settlement/escrow'
@@ -15,6 +19,7 @@ import { rankWithCategoryDefaults } from '@repo/discovery/rank'
 import type { DiscoveryCandidate } from '@repo/discovery/types'
 import { runEvidenceRollup } from '../tasks/rollup'
 import { eq } from 'drizzle-orm'
+import { drizzle } from 'drizzle-orm/postgres-js'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
 import type { Address, Hex } from 'viem'
@@ -22,30 +27,54 @@ import { privateKeyToAccount } from 'viem/accounts'
 
 const databaseUrl = process.env.DATABASE_URL
 const MIGRATIONS = new URL('../../../../packages/database/migrations', import.meta.url).pathname
+/** Remote Postgres (Neon) needs more than bun's default 5s hook budget for migrate + seed. */
+const HOOK_TIMEOUT_MS = 120_000
 
 const SIGNER_KEY =
   '0xead08b3eb71273915a50506c312fc1d8411661e8bb592eaaff46dacb7a1b6a04' as const
 
+/** Fixed clock — matches `rollup.test.ts` so L6 sample size drives confidence high enough to outrank the synthetic competitor. */
+const FIXED_NOW = new Date('2026-09-02T12:00:00Z')
+
+async function resetTestData(sql: ReturnType<typeof createDbClient>['sql']) {
+  await sql.unsafe(`
+    TRUNCATE
+      pool_observations,
+      pending_tasks,
+      agent_scores,
+      evidence,
+      jobs,
+      authorizations,
+      credentials,
+      accounts,
+      listings
+    RESTART IDENTITY CASCADE
+  `)
+}
+
 describe.skipIf(!databaseUrl)('v1 integration — self-register → hire → evidence → rank', () => {
   const url = databaseUrl as string
   let db: ReturnType<typeof createDbClient>['db']
-  let sql: ReturnType<typeof createDbClient>['sql']
+  let sql: ReturnType<typeof createDbClient>['sql'] | undefined
   let listingId: string
   let agentId: string
   let plainJobId: string
   let altanaJobId: string
 
   beforeAll(async () => {
-    const admin = postgres(url, { max: 1, onnotice: () => {} })
-    await admin.unsafe('DROP SCHEMA IF EXISTS public CASCADE')
-    await admin.unsafe('DROP SCHEMA IF EXISTS drizzle CASCADE')
-    await admin.unsafe('CREATE SCHEMA public')
-    await admin.end()
+    if (process.env.AOPS_TEST_DROP_SCHEMA === '1') {
+      const admin = postgres(url, { max: 1, onnotice: () => {} })
+      await admin.unsafe('DROP SCHEMA IF EXISTS public CASCADE')
+      await admin.unsafe('DROP SCHEMA IF EXISTS drizzle CASCADE')
+      await admin.unsafe('CREATE SCHEMA public')
+      await admin.end()
+    }
 
     const client = createDbClient(url)
     db = client.db
     sql = client.sql
-    await migrate(db, { migrationsFolder: MIGRATIONS })
+    await migrate(drizzle(sql, { schema }), { migrationsFolder: MIGRATIONS })
+    await resetTestData(sql)
 
     agentId = `e2e-agent-${Date.now()}`
     const [listing] = await db
@@ -86,11 +115,17 @@ describe.skipIf(!databaseUrl)('v1 integration — self-register → hire → evi
       .set({ status: 'ENDPOINT_VERIFIED', endpointProbeSuccessCount: 3 })
       .where(eq(listings.id, listingId))
     await promoteToLive(lifecycleDeps, { listingId })
-  })
+  }, HOOK_TIMEOUT_MS)
 
   afterAll(async () => {
-    await sql.end()
-  })
+    if (sql) {
+      try {
+        await resetTestData(sql)
+      } finally {
+        await sql.end()
+      }
+    }
+  }, HOOK_TIMEOUT_MS)
 
   test('search finds LIVE listing', async () => {
     const rows = await db.select().from(listings).where(eq(listings.status, 'LIVE'))
@@ -190,16 +225,21 @@ describe.skipIf(!databaseUrl)('v1 integration — self-register → hire → evi
     const before = rankWithCategoryDefaults([baseline, oursBefore])
     expect(before.ok && before.ranked[0]?.candidate.id).toBe('competitor')
 
-    await recordEvidence(db, {
-      agentId,
-      versionHash: 'v1',
-      actionType: 'rebalance_outcome',
-      proofType: 'OUTCOME',
-      evidenceLevel: 6,
-      source: 'marketplace-kpi',
-      payload: { normalizedValue: 0.98 },
-    })
-    await runEvidenceRollup(db, { agentId })
+    // Five L6 rows — one row leaves confidence ~0.5, which cannot beat score=85/conf=0.9
+    // in E9's weighted sum (see `rollup.test.ts`).
+    for (let i = 0; i < 5; i++) {
+      await recordEvidence(db, {
+        agentId,
+        versionHash: 'v1',
+        actionType: 'rebalance_outcome',
+        proofType: 'OUTCOME',
+        evidenceLevel: 6,
+        source: 'marketplace-kpi',
+        payload: { normalizedValue: 1.0, seq: i },
+        createdAt: FIXED_NOW,
+      })
+    }
+    await runEvidenceRollup(db, { agentId }, { now: FIXED_NOW })
 
     const scores = await db.select().from(agentScores).where(eq(agentScores.agentId, agentId))
     expect(scores[0]?.score).toBeTruthy()
