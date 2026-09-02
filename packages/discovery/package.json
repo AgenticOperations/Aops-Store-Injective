@@ -10,12 +10,18 @@
   },
   "exports": {
     "./query": "./public/query.ts",
+    "./schema": "./public/schema.ts",
+    "./types": "./public/types.ts",
     "./rank": "./public/rank.ts",
     "./explain": "./public/explain.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "bun test"
+  },
+  "dependencies": {
+    "@repo/domain": "workspace:*",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "typescript": "catalog:",

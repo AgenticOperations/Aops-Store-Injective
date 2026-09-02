@@ -15,7 +15,16 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },
+  "dependencies": {
+    "@repo/agent-registry": "workspace:*",
+    "@repo/census": "workspace:*",
+    "@repo/database": "workspace:*",
+    "@repo/domain": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "viem": "catalog:"
+  },
   "devDependencies": {
+    "postgres": "catalog:",
     "typescript": "catalog:",
     "@types/bun": "catalog:"
   }

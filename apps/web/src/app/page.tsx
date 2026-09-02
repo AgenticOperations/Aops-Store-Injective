@@ -1,9 +1,14 @@
 import { Button, Card, Grid, Hero, Section, Shell, StatBar } from '@repo/design-system/components'
+import { filterCandidates } from '@repo/discovery/query'
 import { DiscoverChat } from '../components/discover-chat'
 import { ListingGrid } from '../components/listing-grid'
 import { SiteNav } from '../components/site-nav'
 import { FIXTURE_LISTINGS } from '../fixtures/listings'
-import { filterListings } from '../lib/discovery/filter'
+import {
+  allFixtureCandidates,
+  candidatesToListings,
+  fixtureCategoryToDomain,
+} from '../lib/discovery/adapter'
 
 const CATEGORIES = [
   {
@@ -37,7 +42,11 @@ export default async function Page({
   const activeCategory = CATEGORIES.find((c) => c.key === params.category)?.key
   const activeLabel = CATEGORIES.find((c) => c.key === activeCategory)?.label
   const results = activeCategory
-    ? filterListings(FIXTURE_LISTINGS, { category: activeCategory })
+    ? candidatesToListings(
+        filterCandidates(allFixtureCandidates(), {
+          category: fixtureCategoryToDomain(activeCategory),
+        }),
+      )
     : []
 
   const live = FIXTURE_LISTINGS.filter((l) => l.status === 'LIVE')

@@ -1,8 +1,7 @@
-// apps/web/src/lib/discovery/resolve-query.test.ts
 import { describe, expect, test } from 'bun:test'
-import { FIXTURE_LISTINGS } from '../../fixtures/listings'
+import type { DiscoveryQuery } from '../public/schema'
 import { resolveDiscoveryQuery } from './resolve-query'
-import type { DiscoveryQuery } from './schema'
+import { FIXTURE_CANDIDATES } from './test-fixtures'
 
 const baseQuery = (overrides: Partial<DiscoveryQuery> = {}): DiscoveryQuery => ({
   category: null,
@@ -19,20 +18,20 @@ describe('resolveDiscoveryQuery', () => {
   test('confident Gemini category resolution returns matching listings', async () => {
     const result = await resolveDiscoveryQuery({
       freeText: 'find me the best yield route',
-      listings: FIXTURE_LISTINGS,
-      parseWithGemini: async () => baseQuery({ category: 'yield-optimization' }),
+      candidates: FIXTURE_CANDIDATES,
+      parseWithGemini: async () => baseQuery({ category: 'yield_optimization' }),
     })
     expect(result.kind).toBe('results')
     if (result.kind === 'results') {
-      expect(result.listings).toHaveLength(1)
-      expect(result.listings[0]?.id).toBe('lst-yield-01')
+      expect(result.candidates).toHaveLength(1)
+      expect(result.candidates[0]?.id).toBe('lst-yield-01')
     }
   })
 
   test('ambiguous Gemini result returns exactly one clarifying question', async () => {
     const result = await resolveDiscoveryQuery({
       freeText: 'make money on BNB',
-      listings: FIXTURE_LISTINGS,
+      candidates: FIXTURE_CANDIDATES,
       parseWithGemini: async () => baseQuery({ category: null }),
     })
     expect(result.kind).toBe('clarify')
@@ -41,19 +40,19 @@ describe('resolveDiscoveryQuery', () => {
   test('Gemini failure falls back to keyword parser and still resolves', async () => {
     const result = await resolveDiscoveryQuery({
       freeText: 'set up a grid on BNB/USDT',
-      listings: FIXTURE_LISTINGS,
+      candidates: FIXTURE_CANDIDATES,
       parseWithGemini: async () => null,
     })
     expect(result.kind).toBe('results')
     if (result.kind === 'results') {
-      expect(result.listings[0]?.id).toBe('lst-grid-01')
+      expect(result.candidates[0]?.id).toBe('lst-grid-01')
     }
   })
 
   test('Gemini failure + ambiguous keyword text still returns a clarify, never an error', async () => {
     const result = await resolveDiscoveryQuery({
       freeText: 'make money on BNB',
-      listings: FIXTURE_LISTINGS,
+      candidates: FIXTURE_CANDIDATES,
       parseWithGemini: async () => null,
     })
     expect(result.kind).toBe('clarify')
@@ -62,16 +61,14 @@ describe('resolveDiscoveryQuery', () => {
   test('confident category with zero matches returns the empty-result kind, not an error', async () => {
     const result = await resolveDiscoveryQuery({
       freeText: 'rebalance my LP range',
-      listings: FIXTURE_LISTINGS,
+      candidates: FIXTURE_CANDIDATES,
       parseWithGemini: async () =>
         baseQuery({
           category: 'rebalancing',
           capability_requirements: ['uniswap-v4'],
         }),
     })
-    // No rebalancing fixture declares that capability, so the filter narrows to nothing. The
-    // surface must render its empty state rather than treat "no match" as a failure.
     expect(result.kind).toBe('results')
-    if (result.kind === 'results') expect(result.listings).toEqual([])
+    if (result.kind === 'results') expect(result.candidates).toEqual([])
   })
 })

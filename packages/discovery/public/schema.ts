@@ -1,15 +1,21 @@
-// apps/web/src/lib/discovery/schema.ts
+/**
+ * RING 2 · OWNED STATE — our database
+ * `@repo/discovery/schema` — public contract. Named exports only.
+ *
+ * E8's bounded contract (discovery-engine-ryuk.md §4). Domain underscored categories only.
+ */
+
 import { z } from 'zod'
 
-/**
- * E8's bounded contract (discovery-engine-ryuk.md §4). This is the ONLY shape an LLM output is
- * ever trusted to have — nothing downstream re-parses free text, and nothing downstream ever
- * calls the LLM again.
- */
+const domainCategories = [
+  'rebalancing',
+  'grid_trading',
+  'yield_optimization',
+  'health_factor_monitoring',
+] as const
+
 export const discoveryQuerySchema = z.object({
-  category: z
-    .enum(['rebalancing', 'grid-trading', 'yield-optimization', 'health-factor-monitoring'])
-    .nullable(),
+  category: z.enum(domainCategories).nullable(),
   risk_tolerance: z.enum(['low', 'medium', 'high']).nullable(),
   budget_ceiling: z.number().positive().nullable(),
   min_trust_tier: z.enum(['Low', 'Medium', 'High']).nullable(),
@@ -22,4 +28,4 @@ export type DiscoveryQuery = z.infer<typeof discoveryQuerySchema>
 
 /** Used whenever category can't be confidently resolved — one question, never a second round. */
 export const CLARIFYING_QUESTION =
-  'Which category is this for — rebalancing, grid trading, yield optimization, or health-factor monitoring?'
+  'Which category is this for — rebalancing, grid trading, yield optimization, or health factor monitoring?'

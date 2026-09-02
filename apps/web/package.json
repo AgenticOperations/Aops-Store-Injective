@@ -11,6 +11,8 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@repo/discovery": "workspace:*",
+    "@repo/domain": "workspace:*",
     "@repo/design-system": "workspace:*",
     "next": "catalog:",
     "react": "catalog:",

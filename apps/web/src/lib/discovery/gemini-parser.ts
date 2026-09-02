@@ -1,5 +1,6 @@
 // apps/web/src/lib/discovery/gemini-parser.ts
-import { type DiscoveryQuery, discoveryQuerySchema } from './schema'
+import { type DiscoveryQuery, discoveryQuerySchema } from '@repo/discovery/query'
+import type { Category } from '@repo/domain/types'
 
 const GEMINI_TIMEOUT_MS = 6000
 
@@ -23,6 +24,13 @@ const RESPONSE_JSON_SCHEMA = {
     availability_required: { type: 'BOOLEAN' },
   },
   required: ['category', 'capability_requirements', 'availability_required'],
+}
+
+const LLM_CATEGORY_TO_DOMAIN: Record<string, Category> = {
+  rebalancing: 'rebalancing',
+  'grid-trading': 'grid_trading',
+  'yield-optimization': 'yield_optimization',
+  'health-factor-monitoring': 'health_factor_monitoring',
 }
 
 const SYSTEM_PROMPT = `You extract a structured query from a buyer's free text about hiring an
@@ -72,8 +80,14 @@ export async function parseWithGemini(freeText: string): Promise<DiscoveryQuery 
     if (!text) return null
 
     const raw = JSON.parse(text) as Record<string, unknown>
+    const rawCategory = raw.category
+    const domainCategory =
+      rawCategory === 'unknown' || rawCategory == null
+        ? null
+        : (LLM_CATEGORY_TO_DOMAIN[String(rawCategory)] ?? null)
+
     const normalized = {
-      category: raw.category === 'unknown' ? null : raw.category,
+      category: domainCategory,
       risk_tolerance: raw.risk_tolerance === 'unknown' ? null : (raw.risk_tolerance ?? null),
       budget_ceiling: typeof raw.budget_ceiling === 'number' ? raw.budget_ceiling : null,
       min_trust_tier: raw.min_trust_tier === 'unknown' ? null : (raw.min_trust_tier ?? null),

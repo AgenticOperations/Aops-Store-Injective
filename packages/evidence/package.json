@@ -16,6 +16,10 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },
+  "dependencies": {
+    "@repo/database": "workspace:*",
+    "drizzle-orm": "catalog:"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "@types/bun": "catalog:"

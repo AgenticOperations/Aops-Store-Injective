@@ -168,6 +168,13 @@ export const listings = pgTable('listings', {
    * instead of an on-chain anchor (`01` §4.1). */
   erc8004ChainId: integer('erc8004_chain_id'),
   erc8004TokenId: text('erc8004_token_id'),
+  /** Declared service endpoint from `services[]` — probed by `census`, never the `agentURI`
+   * manifest (`final-review-docs/01` §4.3). */
+  declaredEndpoint: text('declared_endpoint'),
+  /** Consecutive successful endpoint probes; resets to 0 on any failure. Three in a row gates
+   * `OWNERSHIP_VERIFIED → ENDPOINT_VERIFIED` and recovers `DEGRADED → LIVE` (`architecture/01`
+   * §1.2, `architecture/03` §3.2). */
+  endpointProbeSuccessCount: integer('endpoint_probe_success_count').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
