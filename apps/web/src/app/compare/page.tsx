@@ -10,7 +10,8 @@ import {
   Shell,
 } from '@repo/design-system/components'
 import { SiteNav } from '../../components/site-nav'
-import { FIXTURE_LISTINGS, type Listing } from '../../fixtures/listings'
+import type { Listing } from '../../fixtures/listings'
+import { DOMAIN_CATEGORIES, domainCategoryToHyphen } from '../../lib/api'
 import { resolveComparison } from '../../lib/compare'
 
 /** A row of the comparison table: one label, one reader per agent. */
@@ -73,14 +74,14 @@ export default async function Page({
   searchParams: Promise<{ ids?: string }>
 }) {
   const params = await searchParams
-  const result = resolveComparison(params.ids)
+  const result = await resolveComparison(params.ids)
 
   return (
     <Shell product="Aops Store" nav={<SiteNav />}>
       <PageHead
         pipeline="③ DEMAND"
         engine="E10 · Compare"
-        status="scaffold · category rule enforced"
+        status="live · API"
         title="Compare agents"
         meta={
           result.ok ? (
@@ -124,9 +125,13 @@ export default async function Page({
             sub="Open a category, then use the compare action on the results."
           >
             <ChipRow>
-              {[...new Set(FIXTURE_LISTINGS.map((l) => l.category))].map((category) => (
-                <a key={category} href={`/?category=${category}`} className="ds-chip">
-                  {category}
+              {DOMAIN_CATEGORIES.map((category) => (
+                <a
+                  key={category}
+                  href={`/?category=${domainCategoryToHyphen(category)}`}
+                  className="ds-chip"
+                >
+                  {domainCategoryToHyphen(category)}
                 </a>
               ))}
             </ChipRow>

@@ -1,14 +1,8 @@
 import { Button, Card, Grid, Hero, Section, Shell, StatBar } from '@repo/design-system/components'
-import { filterCandidates } from '@repo/discovery/query'
 import { DiscoverChat } from '../components/discover-chat'
 import { ListingGrid } from '../components/listing-grid'
 import { SiteNav } from '../components/site-nav'
-import { FIXTURE_LISTINGS } from '../fixtures/listings'
-import {
-  allFixtureCandidates,
-  candidatesToListings,
-  fixtureCategoryToDomain,
-} from '../lib/discovery/adapter'
+import { fetchCategoryListingViews, fetchMarketStats } from '../lib/api'
 
 const CATEGORIES = [
   {
@@ -41,16 +35,11 @@ export default async function Page({
   const params = await searchParams
   const activeCategory = CATEGORIES.find((c) => c.key === params.category)?.key
   const activeLabel = CATEGORIES.find((c) => c.key === activeCategory)?.label
-  const results = activeCategory
-    ? candidatesToListings(
-        filterCandidates(allFixtureCandidates(), {
-          category: fixtureCategoryToDomain(activeCategory),
-        }),
-      )
-    : []
 
-  const live = FIXTURE_LISTINGS.filter((l) => l.status === 'LIVE')
-  const evidenceRows = FIXTURE_LISTINGS.reduce((n, l) => n + (l.evidenceCount ?? 0), 0)
+  const [results, stats] = await Promise.all([
+    activeCategory ? fetchCategoryListingViews(activeCategory) : Promise.resolve([]),
+    fetchMarketStats().catch(() => ({ liveCount: 0, evidenceRows: 0 })),
+  ])
 
   return (
     <Shell product="Aops Store" nav={<SiteNav />} deco>
@@ -69,8 +58,8 @@ export default async function Page({
 
       <StatBar
         items={[
-          { value: String(live.length), label: 'Live agents' },
-          { value: String(evidenceRows), label: 'Evidence rows' },
+          { value: String(stats.liveCount), label: 'Live agents' },
+          { value: String(stats.evidenceRows), label: 'Evidence rows' },
           { value: '4', label: 'Categories' },
           { value: '0', label: 'Self-reported figures' },
         ]}

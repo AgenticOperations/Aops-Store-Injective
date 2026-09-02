@@ -1,5 +1,6 @@
 // apps/web/src/lib/compare.ts
-import { type Category, FIXTURE_LISTINGS, type Listing } from '../fixtures/listings'
+import type { Category, Listing } from '../fixtures/listings'
+import { fetchListingView } from './listing-view'
 
 export const MAX_COMPARE = 3
 
@@ -11,21 +12,7 @@ export type CompareResult =
       detail: string
     }
 
-/**
- * ③ DEMAND · E10 — the *only* way this app assembles a comparison set.
- *
- * `architecture/05` §5.2 correction 2 requires the same-category rule to be enforced at the query
- * layer, not hidden in the UI: "there is no code path that can assemble a cross-category
- * comparison, not just a UI affordance that avoids showing one." That is a statement about the
- * return type, so it is expressed as one — a cross-category request cannot produce a value that
- * contains listings. The page cannot render a mixed table because there is no mixed table to
- * destructure, not because it remembers to check.
- *
- * The rule matters because the KPI sets are category-specific (`03` §7.2). Putting a rebalancer's
- * time-in-range beside a health-factor monitor's liquidation count in one grid does not produce a
- * weak comparison; it produces a meaningless one that still looks authoritative.
- */
-export function resolveComparison(rawIds: string | undefined): CompareResult {
+export async function resolveComparison(rawIds: string | undefined): Promise<CompareResult> {
   const ids = (rawIds ?? '')
     .split(',')
     .map((id) => id.trim())
@@ -51,7 +38,7 @@ export function resolveComparison(rawIds: string | undefined): CompareResult {
 
   const listings: Listing[] = []
   for (const id of ids) {
-    const found = FIXTURE_LISTINGS.find((listing) => listing.id === id)
+    const found = await fetchListingView(id)
     if (!found) {
       return { ok: false, reason: 'unknown-id', detail: `No agent with id "${id}".` }
     }
@@ -67,9 +54,6 @@ export function resolveComparison(rawIds: string | undefined): CompareResult {
     }
   }
 
-  // Exactly one category survived the check above, so destructuring the set — rather than
-  // indexing `listings[0]` — is what makes the non-empty guarantee visible to the type checker
-  // instead of asserted past it.
   const [category] = categories
   if (!category) {
     return { ok: false, reason: 'empty', detail: 'No agents selected.' }
@@ -78,12 +62,6 @@ export function resolveComparison(rawIds: string | undefined): CompareResult {
   return { ok: true, category, listings, caveat: comparabilityCaveat(listings) }
 }
 
-/**
- * `03` §9.2's explicit warning. Same category is necessary but not sufficient: two rebalancers on
- * different pools, or measured over different windows, are not directly comparable even though
- * every column lines up. The axis on which two rebalancers *are* genuinely comparable is same
- * pool, same window, different band width and trigger — so anything else gets said out loud.
- */
 function comparabilityCaveat(listings: Listing[]): string | null {
   const withKpis = listings.filter((listing) => listing.kpis !== null)
   if (withKpis.length < 2) return null

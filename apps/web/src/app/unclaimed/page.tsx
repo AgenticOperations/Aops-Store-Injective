@@ -14,35 +14,26 @@ import {
   Shell,
 } from '@repo/design-system/components'
 import { SiteNav } from '../../components/site-nav'
-import { FIXTURE_LISTINGS } from '../../fixtures/listings'
+import { listListings } from '../../lib/api'
+import { domainCategoryToHyphen } from '../../lib/api'
 
 const CONSOLE_URL = process.env.NEXT_PUBLIC_CONSOLE_URL ?? 'http://localhost:3002'
 
-/**
- * ① SUPPLY · E1 — the Unclaimed directory (`final-review-docs/01` §3).
- *
- * ERC-8004 has no contact field, verified against the spec text, so there is no way to email an
- * owner and ask them to list. This page is the entire owner-discovery mechanism: publish the
- * crawled agents that pass the liveness check, and put one button on each.
- *
- * Three properties are load-bearing and are why this is a separate route, not a marketplace filter:
- *   1. No hire button. A DISCOVERED agent has no proven owner, so there is nobody to authorise.
- *   2. Not in discovery or ranking — `filterListings` drops anything not LIVE, so these rows cannot
- *      reach the browse grid or the chat results even by accident.
- *   3. Liveness gates *appearing here*, never row creation. A crawled agent with a dead endpoint
- *      still has a row; it just is not published (§2).
- */
-export default function Page() {
-  const unclaimed = FIXTURE_LISTINGS.filter(
-    (listing) => listing.status === 'DISCOVERED' && listing.syncStatus === 'LIVE',
-  )
+export default async function Page() {
+  let unclaimed: Awaited<ReturnType<typeof listListings>> = []
+  try {
+    unclaimed = await listListings({ status: 'DISCOVERED' })
+    unclaimed = unclaimed.filter((l) => l.declaredEndpoint !== null)
+  } catch {
+    unclaimed = []
+  }
 
   return (
     <Shell product="Aops Store" nav={<SiteNav />}>
       <PageHead
         pipeline="① SUPPLY"
         engine="E1 · Ingestion"
-        status="scaffold · fixture data"
+        status="live · API"
         title="Unclaimed agents"
         meta={<Badge tone="warn">{unclaimed.length} awaiting an owner</Badge>}
         lede="Registered on BNB Chain and answering on a live endpoint, but nobody has proven they own them yet. We found these by crawling the ERC-8004 Identity Registry — we did not ask anyone to be here."
@@ -74,9 +65,9 @@ export default function Page() {
                 </CardBand>
                 <CardBody>
                   <div>
-                    <h3 style={{ marginBottom: 4 }}>{listing.name}</h3>
+                    <h3 style={{ marginBottom: 4 }}>{listing.agentId}</h3>
                     <p style={{ margin: 0, color: 'var(--ink-muted)', fontSize: 13 }}>
-                      {listing.summary}
+                      {listing.declaredEndpoint ?? 'No endpoint declared'}
                     </p>
                   </div>
                   <DefList
@@ -85,7 +76,7 @@ export default function Page() {
                         label: 'Agent ID',
                         value: <span style={{ fontFamily: 'var(--mono)' }}>{listing.id}</span>,
                       },
-                      { label: 'Category', value: listing.category },
+                      { label: 'Category', value: domainCategoryToHyphen(listing.category) },
                       { label: 'Found via', value: 'ERC-8004 registry crawl' },
                     ]}
                   />

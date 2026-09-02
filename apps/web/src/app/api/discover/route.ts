@@ -1,8 +1,8 @@
 // apps/web/src/app/api/discover/route.ts
 import { resolveDiscoveryQuery } from '@repo/discovery/query'
 import { NextResponse } from 'next/server'
-import { FIXTURE_LISTINGS } from '../../../fixtures/listings'
-import { fixtureToCandidate } from '../../../lib/discovery/adapter'
+import { loadLiveDiscoveryCandidates } from '../../../lib/api'
+import { apiToListingView } from '../../../lib/listing-view'
 import { parseWithGemini } from '../../../lib/discovery/gemini-parser'
 
 export async function POST(request: Request) {
@@ -13,7 +13,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ kind: 'clarify', question: 'What are you looking to do?' })
   }
 
-  const candidates = FIXTURE_LISTINGS.map(fixtureToCandidate)
+  let candidates
+  try {
+    candidates = await loadLiveDiscoveryCandidates()
+  } catch {
+    return NextResponse.json({
+      kind: 'clarify',
+      question: 'The marketplace API is unavailable — try browsing by category instead.',
+    })
+  }
+
   const result = await resolveDiscoveryQuery({
     freeText,
     candidates,
@@ -21,8 +30,11 @@ export async function POST(request: Request) {
   })
 
   if (result.kind === 'results') {
-    const ids = new Set(result.candidates.map((c) => c.id))
-    const listings = FIXTURE_LISTINGS.filter((listing) => ids.has(listing.id))
+    const { getListing } = await import('../../../lib/api')
+    const details = await Promise.all(result.candidates.map((c) => getListing(c.id)))
+    const listings = details
+      .filter((d): d is NonNullable<typeof d> => d !== null)
+      .map((d) => apiToListingView(d))
     return NextResponse.json({ ...result, listings })
   }
 
