@@ -1,17 +1,18 @@
 import { Badge, Button, PageHead, Scroller, Section, Shell } from '@repo/design-system/components'
 import { ConsoleNav } from '../../components/console-nav'
-import { FIXTURE_OWNED } from '../../fixtures/listings'
+import { fetchAllOwnedListings } from '../../lib/listing-view'
 
-/** ① SUPPLY · E2 — the full listing table, denser than the overview cards. */
-export default function Page() {
+export default async function Page() {
+  const listings = await fetchAllOwnedListings()
+
   return (
     <Shell product="Builder Console" nav={<ConsoleNav />}>
       <PageHead
         pipeline="① SUPPLY"
         engine="E2 · Claim + Verify"
-        status="scaffold · fixture data"
+        status="live · API"
         title="Listings"
-        meta={<Badge>{FIXTURE_OWNED.length} rows</Badge>}
+        meta={<Badge>{listings.length} rows</Badge>}
         lede="Everything registered under your wallet, plus anything the crawler found that might be yours."
       />
 
@@ -31,7 +32,7 @@ export default function Page() {
               </tr>
             </thead>
             <tbody>
-              {FIXTURE_OWNED.map((listing) => (
+              {listings.map((listing) => (
                 <tr key={listing.id}>
                   <td>
                     <strong>{listing.name}</strong>

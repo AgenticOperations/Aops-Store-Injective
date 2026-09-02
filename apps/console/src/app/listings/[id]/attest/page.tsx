@@ -13,7 +13,7 @@ import {
 } from '@repo/design-system/components'
 import { notFound } from 'next/navigation'
 import { ConsoleNav } from '../../../../components/console-nav'
-import { findOwned } from '../../../../fixtures/listings'
+import { fetchOwnedListing } from '../../../../lib/listing-view'
 
 /**
  * ② PROOF · E4 — attestation, **labelled as an open product call** per the plan.
@@ -32,7 +32,7 @@ import { findOwned } from '../../../../fixtures/listings'
  */
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const listing = findOwned(id)
+  const listing = await fetchOwnedListing(id)
   if (!listing) notFound()
 
   const hasMedium = listing.sandboxAttempts.some((attempt) => attempt.outcome === 'PASSED')

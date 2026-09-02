@@ -14,8 +14,7 @@ import {
   Shell,
 } from '@repo/design-system/components'
 import { SiteNav } from '../../components/site-nav'
-import { listListings } from '../../lib/api'
-import { domainCategoryToHyphen } from '../../lib/api'
+import { listListings, domainCategoryToHyphen } from '../../lib/api'
 
 const CONSOLE_URL = process.env.NEXT_PUBLIC_CONSOLE_URL ?? 'http://localhost:3002'
 

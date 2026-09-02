@@ -1,4 +1,5 @@
 import {
+  Actions,
   Badge,
   Banner,
   Button,
@@ -7,6 +8,7 @@ import {
   CardBody,
   CardFoot,
   Grid,
+  Note,
   PageHead,
   Section,
   Shell,
@@ -14,28 +16,22 @@ import {
   StatGrid,
 } from '@repo/design-system/components'
 import { ConsoleNav } from '../components/console-nav'
-import { FIXTURE_OWNED } from '../fixtures/listings'
+import { fetchAllOwnedListings } from '../lib/listing-view'
 
 const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000'
 
-/**
- * ① SUPPLY / ⑤ OPERATE · the owner's overview (E2 claim state, E14a liveness).
- *
- * The console **constructs, never signs.** Every action on it produces something a wallet or a
- * worker then acts on — it holds no key and imports nothing from Ring 3. That is why the counts
- * below are all read-only and why every button leads to a page that explains what it would do.
- */
-export default function Page() {
-  const live = FIXTURE_OWNED.filter((l) => l.status === 'LIVE')
-  const degraded = FIXTURE_OWNED.filter((l) => l.syncStatus === 'DEGRADED')
-  const unclaimed = FIXTURE_OWNED.filter((l) => l.status === 'DISCOVERED')
+export default async function Page() {
+  const owned = await fetchAllOwnedListings()
+  const live = owned.filter((l) => l.status === 'LIVE')
+  const degraded = owned.filter((l) => l.syncStatus === 'DEGRADED')
+  const unclaimed = owned.filter((l) => l.status === 'DISCOVERED')
 
   return (
     <Shell product="Builder Console" nav={<ConsoleNav />}>
       <PageHead
         pipeline="① SUPPLY · ⑤ OPERATE"
         engine="E2 · Claim · E14a · Liveness"
-        status="scaffold · fixture data"
+        status="live · API"
         title="Your agents"
         lede="This console constructs — it never signs. Claims are signed by your wallet, and anything that touches capital is carried out by a worker, not by this page."
       />
@@ -88,41 +84,48 @@ export default function Page() {
           </Button>
         }
       >
-        <Grid cols={2}>
-          {FIXTURE_OWNED.map((listing) => (
-            <Card key={listing.id}>
-              <CardBand>
-                <Badge tone={listing.status === 'LIVE' ? 'live' : 'warn'}>{listing.status}</Badge>
-                <span style={{ display: 'flex', gap: 'var(--s2)' }}>
-                  {listing.syncStatus === 'DEGRADED' && <Badge tone="alert">Degraded</Badge>}
-                  <Badge>{listing.trustTier} trust</Badge>
-                </span>
-              </CardBand>
-              <CardBody>
-                <div>
-                  <h3 style={{ marginBottom: 4 }}>{listing.name}</h3>
-                  <p style={{ margin: 0, color: 'var(--ink-muted)', fontSize: 13 }}>
-                    {listing.category}
-                  </p>
-                </div>
-                <div style={{ fontSize: 13, color: 'var(--ink-muted)' }}>
-                  {listing.evidenceCount === null
-                    ? 'No evidence rows yet'
-                    : `${listing.evidenceCount} evidence rows`}{' '}
-                  · {listing.activeHires} active {listing.activeHires === 1 ? 'hire' : 'hires'}
-                </div>
-              </CardBody>
-              <CardFoot>
-                <Button href={`/listings/${listing.id}`}>Manage</Button>
-                {listing.status === 'LIVE' && (
-                  <Button href={`${WEB_URL}/agents/${listing.id}`} variant="ghost">
-                    Buyer view
-                  </Button>
-                )}
-              </CardFoot>
-            </Card>
-          ))}
-        </Grid>
+        {owned.length === 0 ? (
+          <Banner tone="warn">
+            No listings in the database yet. Self-register an agent or wait for the crawler to
+            populate DISCOVERED rows.
+          </Banner>
+        ) : (
+          <Grid cols={2}>
+            {owned.map((listing) => (
+              <Card key={listing.id}>
+                <CardBand>
+                  <Badge tone={listing.status === 'LIVE' ? 'live' : 'warn'}>{listing.status}</Badge>
+                  <span style={{ display: 'flex', gap: 'var(--s2)' }}>
+                    {listing.syncStatus === 'DEGRADED' && <Badge tone="alert">Degraded</Badge>}
+                    <Badge>{listing.trustTier} trust</Badge>
+                  </span>
+                </CardBand>
+                <CardBody>
+                  <div>
+                    <h3 style={{ marginBottom: 4 }}>{listing.name}</h3>
+                    <p style={{ margin: 0, color: 'var(--ink-muted)', fontSize: 13 }}>
+                      {listing.category}
+                    </p>
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--ink-muted)' }}>
+                    {listing.evidenceCount === null
+                      ? 'No evidence rows yet'
+                      : `${listing.evidenceCount} evidence rows`}{' '}
+                    · {listing.activeHires} active {listing.activeHires === 1 ? 'hire' : 'hires'}
+                  </div>
+                </CardBody>
+                <CardFoot>
+                  <Button href={`/listings/${listing.id}`}>Manage</Button>
+                  {listing.status === 'LIVE' && (
+                    <Button href={`${WEB_URL}/agents/${listing.id}`} variant="ghost">
+                      Buyer view
+                    </Button>
+                  )}
+                </CardFoot>
+              </Card>
+            ))}
+          </Grid>
+        )}
       </Section>
     </Shell>
   )

@@ -17,7 +17,7 @@ import {
 import { notFound } from 'next/navigation'
 import { ConsoleNav } from '../../../components/console-nav'
 import { Ladder } from '../../../components/ladder'
-import { findOwned } from '../../../fixtures/listings'
+import { fetchOwnedListing } from '../../../lib/listing-view'
 
 const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000'
 
@@ -32,7 +32,7 @@ const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000'
  */
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const listing = findOwned(id)
+  const listing = await fetchOwnedListing(id)
   if (!listing) notFound()
 
   const isLive = listing.status === 'LIVE'
@@ -43,7 +43,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       <PageHead
         pipeline="① SUPPLY · ② PROOF"
         engine="E2 · E3 · E4"
-        status="scaffold · fixture data"
+        status="live · API"
         title={listing.name}
         meta={
           <>
