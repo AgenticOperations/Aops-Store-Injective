@@ -780,3 +780,82 @@ Stamped in the same turn: `04b` §4b.10, `final-review-docs/03` §12, Decision 0
 open", `PRODUCT-STATE.md`, `SCAFFOLD.md`, decomposition §5 / console row,
 `final-review-docs/README.md`.
 
+
+---
+
+## 2026-09-02 — E11's caller side written up (`final-review-docs/04`); one Altana assumption checked and resolved against us
+
+From KC's session (with Claude), for Ryuk.
+
+**New canonical doc: [`final-review-docs/04-agent-side-onboarding-and-credentials.md`](docs/final-review-docs/04-agent-side-onboarding-and-credentials.md)**,
+indexed in `final-review-docs/README.md`. `final-review 01` covers how a *seller* (an agent)
+onboards. Nothing covered the other direction — how a *caller* (a Cursor/Claude Code session, a
+Hermes/OpenClaw runtime, one of our own four category agents) reaches the marketplace, proves
+who it is, and is revoked. That's what this doc is. In scope, it's the concrete build for E11's
+buyer-facing half and part of E12's machine-facing surface — decomposition §4's E11 entry and
+`01` §12's gap listing should point here, not stay open; I haven't stamped either myself since
+§6's own framing is "a call for a human," but they're stale as of this entry.
+
+**Shape, short version:**
+- Wallet = identity, permanently. We never generate, hold, or see a caller's private key —
+  including the `dlg` case (a coding agent acting for a human): it gets its **own** Altana
+  wallet, the human grants it a session, the human's key never leaves the human.
+- The off-chain token is a **receipt, not an authority** — a disposable, device-bound artifact
+  so a caller isn't re-signing EIP-712 on every `search` call. It carries no scopes and no caps.
+- **Authorization is two tiers, mirrored from the chain, not duplicated off it**: Standing
+  (enrolled, not `SUSPENDED` — read, feedback, cancel, dispute, revoke) and Fresh (a live
+  on-chain session bound to the account covers this exact call). Ring 3 is the only place a
+  value-moving call is ever decided — an earlier draft had a second off-chain scope/cap check
+  "independently re-verifying" the same chain state, which is a duplicate that can only ever
+  agree or be wrong, never an actual second control. Cut.
+- History is wallet-keyed, never credential-keyed (§6.1, §11.5, §11.6) — a lapsed or lost
+  credential never loses job history or touches a job in flight; a new credential under the
+  same wallet sees everything the old one did. §11.6 also specifies the buyer-facing "what has
+  my agent done" query, which neither `11.3`'s credential-revoke row nor `05` §5.2's seller-trust
+  UI covers — that screen didn't exist in any doc before this session.
+- 17-row attacker-first threat model, and an honest limit stated plainly (host compromise = the
+  attacker is the agent; nothing fixes that, the design only bounds and makes it visible).
+
+**Checked live against `docs.altana.network` 2026-09-02, not assumed — one came back wrong.**
+Doc 04 §12 originally leaned on "the session's spend cap never refills" to make a durable
+session key safe for an agent to hold indefinitely. Checked directly (`/sdk/grant-session`,
+`/concepts/sessions`, `/concepts/keystore`):
+
+- **`grantSession`'s spend permission is `{ limit, period, token }`** — the docs state it plainly:
+  "spend permissions cap how much the session can move per token, **per rolling period**"
+  (day/hour examples shown). **It's a rate, not a lifetime pot.** A "50 USDT/day" session held
+  by a compromised key drains up to `50 × days-until-revoked`, not 50 total.
+- **The Keystore has no spend or remaining-budget field** — only key validity (exists / revoked
+  / expired). Any "remaining budget" display has to be built by indexing `execute` events
+  ourselves; nothing on the vendor side hands it to us.
+- Still genuinely unconfirmed either way (contract-level, not doc-level): whether the per-period
+  cap is enforced atomically against concurrent `execute` calls, and whether a session key can
+  rotate without a fresh human signature.
+
+**Nothing about the design breaks** — expiry, the call allowlist, and one-tx `revokeSession` are
+unaffected and separately confirmed. What changes is the actual safety story: session **duration**
+is now a real lever (a rate held for 90 days has 30× the blast radius of the same rate for 3
+days), and it's on us to show `rate × duration` as the effective max exposure in the grant-session
+UI before the human signs — Altana's primitive won't compute that total for us. Full correction
+trail (with the specific sentences that were wrong) is in doc 04 §12.1/§12.1.1/§12.2/§12.5/§9.3
+and threat-row 16.
+
+**Bears on `01` §12's gap #1 (`commercial_config` / capital ceiling, since the old
+`COMMERCIAL_VERIFIED → RISK_REVIEW → APPROVED` states were dropped with nothing decided in their
+place)** — decomposition §6 lists the leaning proposal as "owner-editable field, capped by an
+automatic `category baseline × trust tier` ceiling enforced at session-grant time." Doc 04 §9.2
+finds there's no off-chain field left to enforce anything against — the *only* enforced ceiling
+is whatever `grantSession`'s signed rate + expiry says, full stop. The two aren't in conflict:
+`category baseline × trust tier` survives as the **suggested default** rate/expiry pre-filled in
+the grant UI (a product default at the point of signing), never a backend-enforced field. Worth
+an explicit line in `01` §12 saying so rather than leaving both readings live.
+
+**Open, doc 04 §17** — mostly tuning values (live-credential ceiling, `jti` cache sharing under
+horizontal scale, `valid_until`'s absolute ceiling) plus the two Altana facts above that need the
+contract, not the docs.
+
+**Not started, flagged in the same session, worth knowing before anyone assumes it exists**:
+`search`/`get`/`quote`/`hire` — the actual MCP tool contracts an agent calls — are still just
+names in decomposition's E8/E12 rows and doc 04 §5's table. No input/output schemas, no error
+shape, no `/llms.txt` text, no A2A Agent Card JSON. This is the highest-leverage thing left
+unwritten: none of today's credential work matters to a Cursor/Hermes caller until this exists.
