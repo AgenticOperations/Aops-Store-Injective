@@ -1,3 +1,5 @@
+import type { DiscoveryCandidate } from '@repo/discovery/query'
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
 
 export type ApiListingSummary = {
@@ -69,42 +71,58 @@ export async function searchListings(category: string): Promise<{
   results: Array<Omit<ApiListingSummary, 'agentId' | 'status' | 'ownerWallet' | 'declaredEndpoint' | 'sampleSize' | 'activeHires'> & { weightedScore: number }>
   methodologyVersion: string
 }> {
-  const domainCategory = hyphenCategoryToDomain(category)
-  const res = await fetch(`${API_BASE}/v1/search?category=${encodeURIComponent(domainCategory)}`, {
-    next: { revalidate: 30 },
-  })
-  if (!res.ok) throw new Error(`search failed: ${res.status}`)
-  return res.json()
+  try {
+    const domainCategory = hyphenCategoryToDomain(category)
+    const res = await fetch(`${API_BASE}/v1/search?category=${encodeURIComponent(domainCategory)}`, {
+      next: { revalidate: 30 },
+    })
+    if (!res.ok) throw new Error(`search failed: ${res.status}`)
+    return res.json()
+  } catch {
+    return { results: [], methodologyVersion: 'unavailable' }
+  }
 }
 
 export async function listListings(opts?: {
   status?: string
   category?: string
 }): Promise<ApiListingSummary[]> {
-  const params = new URLSearchParams()
-  if (opts?.status) params.set('status', opts.status)
-  if (opts?.category) params.set('category', hyphenCategoryToDomain(opts.category))
-  const qs = params.toString()
-  const res = await fetch(`${API_BASE}/v1/listings${qs ? `?${qs}` : ''}`, {
-    next: { revalidate: 30 },
-  })
-  if (!res.ok) throw new Error(`list listings failed: ${res.status}`)
-  const body = (await res.json()) as { listings: ApiListingSummary[] }
-  return body.listings
+  try {
+    const params = new URLSearchParams()
+    if (opts?.status) params.set('status', opts.status)
+    if (opts?.category) params.set('category', hyphenCategoryToDomain(opts.category))
+    const qs = params.toString()
+    const res = await fetch(`${API_BASE}/v1/listings${qs ? `?${qs}` : ''}`, {
+      next: { revalidate: 30 },
+    })
+    if (!res.ok) return []
+    const body = (await res.json()) as { listings: ApiListingSummary[] }
+    return body.listings
+  } catch {
+    return []
+  }
 }
 
 export async function getListing(id: string): Promise<ApiListingDetail | null> {
-  const res = await fetch(`${API_BASE}/v1/agents/${id}`, { next: { revalidate: 30 } })
-  if (res.status === 404) return null
-  if (!res.ok) throw new Error(`get failed: ${res.status}`)
-  return res.json()
+  try {
+    const res = await fetch(`${API_BASE}/v1/agents/${id}`, { next: { revalidate: 30 } })
+    if (res.status === 404) return null
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
 }
 
 export async function getJob(jobId: string): Promise<ApiJob | null> {
-  const res = await fetch(`${API_BASE}/v1/jobs/${jobId}`, { next: { revalidate: 10 } })
-  if (res.status === 404) return null
-  if (!res.ok) throw new Error(`get job failed: ${res.status}`)
-  return res.json()
+  try {
+    const res = await fetch(`${API_BASE}/v1/jobs/${jobId}`, { next: { revalidate: 10 } })
+    if (res.status === 404) return null
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
 }
 
 export async function fetchCategoryListingViews(category: string) {
@@ -116,20 +134,21 @@ export async function fetchCategoryListingViews(category: string) {
     .map((d) => apiToListingView(d))
 }
 
-export async function loadLiveDiscoveryCandidates() {
-  const { listListings } = await import('./api')
+export async function loadLiveDiscoveryCandidates(): Promise<DiscoveryCandidate[]> {
   const live = await listListings({ status: 'LIVE,DEGRADED' })
-  return live.map((row) => ({
-    id: row.id,
-    category: row.category,
-    status: row.status,
-    trustTier: row.trustTier ?? 'Low',
-    capabilities: [] as string[],
-    score: row.score,
-    confidence: row.confidence,
-    feeBps: row.feeBps ?? 300,
-    availability: row.status === 'LIVE' ? 1 : 0.3,
-  }))
+  return live.map(
+    (row): DiscoveryCandidate => ({
+      id: row.id,
+      category: row.category as DiscoveryCandidate['category'],
+      status: row.status as DiscoveryCandidate['status'],
+      trustTier: (row.trustTier ?? 'Low') as DiscoveryCandidate['trustTier'],
+      capabilities: [],
+      score: row.score,
+      confidence: row.confidence,
+      feeBps: row.feeBps ?? 300,
+      availability: row.status === 'LIVE' ? 1 : 0.3,
+    }),
+  )
 }
 
 export async function fetchMarketStats() {

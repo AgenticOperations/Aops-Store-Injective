@@ -12,7 +12,12 @@ export type CompareResult =
       detail: string
     }
 
-export async function resolveComparison(rawIds: string | undefined): Promise<CompareResult> {
+type ListingLookup = (id: string) => Promise<Listing | null>
+
+export async function resolveComparison(
+  rawIds: string | undefined,
+  lookup: ListingLookup = fetchListingView,
+): Promise<CompareResult> {
   const ids = (rawIds ?? '')
     .split(',')
     .map((id) => id.trim())
@@ -38,7 +43,7 @@ export async function resolveComparison(rawIds: string | undefined): Promise<Com
 
   const listings: Listing[] = []
   for (const id of ids) {
-    const found = await fetchListingView(id)
+    const found = await lookup(id)
     if (!found) {
       return { ok: false, reason: 'unknown-id', detail: `No agent with id "${id}".` }
     }
