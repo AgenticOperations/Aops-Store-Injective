@@ -4,11 +4,13 @@
   "tasks": {
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dotEnv": [".env"]
     },
     "start": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dotEnv": [".env"]
     },
     "build": {
       "dependsOn": ["^build"],
@@ -19,6 +21,10 @@
     },
     "test": {
       "dependsOn": ["^test"]
+    },
+    "db:migrate": {
+      "cache": false,
+      "dotEnv": [".env"]
     }
   }
 }

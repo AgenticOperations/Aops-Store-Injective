@@ -14,7 +14,7 @@ const envSchema = z.object({
     .string()
     .regex(/^0x[a-fA-F0-9]{40}$/)
     .default(DEFAULT_WATCH_POOL_ADDRESS),
-  WATCH_NETWORK: z.enum(['mainnet', 'testnet']).default('testnet'),
+  WATCH_NETWORK: z.enum(['mainnet', 'testnet']).default('mainnet'),
   WATCH_POOL_INTERVAL_MS: z.coerce.number().int().positive().default(60_000),
   WATCH_ENDPOINT_INTERVAL_MS: z.coerce.number().int().positive().default(120_000),
 })

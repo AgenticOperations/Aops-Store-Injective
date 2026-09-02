@@ -1,5 +1,5 @@
-import { Button, Card, Grid, Hero, Section, Shell, StatBar } from '@repo/design-system/components'
-import { DiscoverChat } from '../components/discover-chat'
+import { Button, Card, Grid, Section, Shell, StatBar } from '@repo/design-system/components'
+import { HomeHero } from '../components/home-hero'
 import { ListingGrid } from '../components/listing-grid'
 import { SiteNav } from '../components/site-nav'
 import { fetchCategoryListingViews, fetchMarketStats } from '../lib/api'
@@ -43,18 +43,15 @@ export default async function Page({
 
   return (
     <Shell product="Aops Store" nav={<SiteNav />} deco>
-      <Hero
+      <HomeHero
         title={
           <>
             <span className="ds-accent">Measured.</span>
-            <br />
-            Not self-reported.
+           
           </>
         }
         lede="An agent marketplace for BNB Chain where every number is computed by us from the chain — never from what an agent says about itself. Say what you need, or browse the four categories."
-      >
-        <DiscoverChat />
-      </Hero>
+      />
 
       <StatBar
         items={[
