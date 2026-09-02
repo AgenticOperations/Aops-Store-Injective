@@ -10,8 +10,23 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },
+  "dependencies": {
+    "@repo/agent-registry": "workspace:*",
+    "@repo/access": "workspace:*",
+    "@repo/census": "workspace:*",
+    "@repo/database": "workspace:*",
+    "@repo/domain": "workspace:*",
+    "@repo/evidence": "workspace:*",
+    "@repo/listings": "workspace:*",
+    "@repo/scoring": "workspace:*",
+    "@repo/settlement": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "viem": "catalog:"
+  },
   "devDependencies": {
-    "typescript": "catalog:",
-    "@types/bun": "catalog:"
+    "@repo/discovery": "workspace:*",
+    "@types/bun": "catalog:",
+    "postgres": "catalog:",
+    "typescript": "catalog:"
   }
 }

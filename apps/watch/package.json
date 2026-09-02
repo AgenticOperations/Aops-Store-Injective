@@ -10,11 +10,16 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },
-  "devDependencies": {
-    "typescript": "catalog:",
-    "@types/bun": "catalog:"
-  },
   "dependencies": {
+    "@repo/census": "workspace:*",
+    "@repo/database": "workspace:*",
+    "@repo/market-data": "workspace:*",
+    "drizzle-orm": "catalog:",
     "viem": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "postgres": "catalog:",
+    "typescript": "catalog:"
   }
 }

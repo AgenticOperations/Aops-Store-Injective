@@ -1,5 +1,6 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import type { RouteHandler } from '@hono/zod-openapi'
+import type { ApiEnv } from '../types/env'
 
 const HealthResponse = z.object({ ok: z.boolean() }).openapi('HealthResponse')
 
@@ -14,4 +15,4 @@ export const healthRoute = createRoute({
   },
 })
 
-export const healthHandler: RouteHandler<typeof healthRoute> = (c) => c.json({ ok: true })
+export const healthHandler: RouteHandler<typeof healthRoute, ApiEnv> = (c) => c.json({ ok: true })

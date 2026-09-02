@@ -16,7 +16,8 @@ import {
 } from '@repo/design-system/components'
 import { notFound } from 'next/navigation'
 import { SiteNav } from '../../../../components/site-nav'
-import { type TrustTier, findListing } from '../../../../fixtures/listings'
+import { fetchListingView } from '../../../../lib/listing-view'
+import type { TrustTier } from '../../../../fixtures/listings'
 
 const TIER_RANK: Record<TrustTier, number> = { Low: 0, Medium: 1, High: 2 }
 const TIERS: TrustTier[] = ['Low', 'Medium', 'High']
@@ -45,7 +46,7 @@ export default async function Page({
 }) {
   const { id } = await params
   const { minTier } = await searchParams
-  const listing = findListing(id)
+  const listing = await fetchListingView(id)
   if (!listing) notFound()
 
   const buyerMinimum = TIERS.find((tier) => tier === minTier) ?? 'Low'

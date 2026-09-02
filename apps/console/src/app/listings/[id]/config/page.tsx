@@ -12,7 +12,7 @@ import {
 } from '@repo/design-system/components'
 import { notFound } from 'next/navigation'
 import { ConsoleNav } from '../../../../components/console-nav'
-import { findOwned } from '../../../../fixtures/listings'
+import { fetchOwnedListing } from '../../../../lib/listing-view'
 
 /**
  * ④ TRANSACTION · E11 — operating limits editor shell. **Owner-declared, not session-enforced.**
@@ -25,7 +25,7 @@ import { findOwned } from '../../../../fixtures/listings'
  */
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const listing = findOwned(id)
+  const listing = await fetchOwnedListing(id)
   if (!listing) notFound()
 
   const c = listing.commercialConfig
@@ -110,6 +110,18 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </form>
           <Note>Fields are disabled so a typed number cannot be mistaken for a guarantee.</Note>
         </Panel>
+
+        <div className="ds-subsection">
+          <Panel>
+            <strong>Grant-session effective max exposure (buyer side)</strong>
+            <p>
+              When a buyer grants an Altana session, the console shows{' '}
+              <code>rate × duration = effective max exposure</code> before they sign — e.g. 100
+              USDC/day × 7 days = 700 USDC ceiling. This is display-only honesty; enforcement
+              lives on-chain in the session contract.
+            </p>
+          </Panel>
+        </div>
 
         <div className="ds-subsection">
           <OpenQuestion id="01 §12 · commercial_config">

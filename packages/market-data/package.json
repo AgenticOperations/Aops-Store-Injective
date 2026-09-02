@@ -11,6 +11,7 @@
   "exports": {
     "./positions": "./public/positions.ts",
     "./pools": "./public/pools.ts",
+    "./observe": "./public/observe.ts",
     "./prices": "./public/prices.ts",
     "./keys": "./public/keys.ts"
   },

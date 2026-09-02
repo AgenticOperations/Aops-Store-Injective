@@ -66,6 +66,7 @@ export const POOL_ABI = parseAbi([
   'function token1() view returns (address)',
   'function fee() view returns (uint24)',
   'function ticks(int24 tick) view returns (uint128 liquidityGross, int128 liquidityNet, uint256 feeGrowthOutside0X128, uint256 feeGrowthOutside1X128, int56 tickCumulativeOutside, uint160 secondsPerLiquidityOutsideX128, uint32 secondsOutside, bool initialized)',
+  'function observe(uint32[] secondsAgos) view returns (int56[] tickCumulatives, uint160[] secondsPerLiquidityCumulativeX128s)',
 ])
 
 /** `03` §3.7, §6.6 — required in the surface for any staked position; `NPM.decreaseLiquidity`
@@ -170,6 +171,16 @@ export function readPoolAddress(
     abi: FACTORY_ABI,
     functionName: 'getPool',
     args: [tokenA, tokenB, fee],
+  })
+}
+
+/** Oracle observation read — `03` §7.3. Used by `apps/watch` to accumulate tick history. */
+export function readPoolObserve(client: PublicClient, poolAddress: Address, secondsAgos: number[]) {
+  return client.readContract({
+    address: poolAddress,
+    abi: POOL_ABI,
+    functionName: 'observe',
+    args: [secondsAgos.map((s) => s)],
   })
 }
 

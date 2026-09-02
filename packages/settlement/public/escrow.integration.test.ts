@@ -36,20 +36,26 @@ describe.skipIf(!databaseUrl)('settlement transitions (DATABASE_URL)', () => {
   let sql: ReturnType<typeof createDbClient>['sql']
 
   beforeAll(async () => {
-    const admin = postgres(url, { max: 1, onnotice: () => {} })
-    await admin.unsafe('DROP SCHEMA IF EXISTS public CASCADE')
-    await admin.unsafe('DROP SCHEMA IF EXISTS drizzle CASCADE')
-    await admin.unsafe('CREATE SCHEMA public')
-    await admin.end()
+    try {
+      const admin = postgres(url, { max: 1, onnotice: () => {} })
+      await admin.unsafe('DROP SCHEMA IF EXISTS public CASCADE')
+      await admin.unsafe('DROP SCHEMA IF EXISTS drizzle CASCADE')
+      await admin.unsafe('CREATE SCHEMA public')
+      await admin.end()
 
-    const client = createDbClient(url)
-    db = client.db
-    sql = client.sql
-    await migrate(db, { migrationsFolder: MIGRATIONS_FOLDER })
+      const client = createDbClient(url)
+      db = client.db
+      sql = client.sql
+      await migrate(db, { migrationsFolder: MIGRATIONS_FOLDER })
+    } catch (error) {
+      throw new Error(
+        `settlement integration tests require a live Postgres at DATABASE_URL — ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
   })
 
   afterAll(async () => {
-    await sql.end()
+    if (sql) await sql.end()
   })
 
   test('PLAIN release deducts and records flat fee correctly', async () => {

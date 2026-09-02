@@ -20,7 +20,7 @@ import { EvidenceTimeline } from '../../../components/evidence-timeline'
 import { EvidenceVector } from '../../../components/evidence-vector'
 import { SiteNav } from '../../../components/site-nav'
 import { TrustLadder } from '../../../components/trust-ladder'
-import { findListing } from '../../../fixtures/listings'
+import { fetchListingView } from '../../../lib/listing-view'
 
 const TRUST_TONE = { Low: 'neutral', Medium: 'live', High: 'live' } as const
 
@@ -35,7 +35,7 @@ const TRUST_TONE = { Low: 'neutral', Medium: 'live', High: 'live' } as const
  */
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const listing = findListing(id)
+  const listing = await fetchListingView(id)
   if (!listing) notFound()
 
   const { kpis } = listing
@@ -45,7 +45,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       <PageHead
         pipeline="② PROOF · ③ DEMAND"
         engine="E6 · Evidence + Scoring"
-        status="scaffold · fixture data"
+        status="live · API"
         title={listing.name}
         meta={
           <>

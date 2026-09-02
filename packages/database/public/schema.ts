@@ -22,6 +22,7 @@ import type {
 import type { Category, TrustTier } from '@repo/domain/types'
 import { relations, sql } from 'drizzle-orm'
 import {
+  bigint,
   check,
   index,
   integer,
@@ -377,6 +378,67 @@ export const jobs = pgTable(
 )
 
 // -------------------------------------------------------------------------------------------
+// Pool observations — append-only accumulation from `apps/watch` (E5). Idempotent on
+// (pool_address, observation_index, block_number).
+// -------------------------------------------------------------------------------------------
+
+export const poolObservations = pgTable(
+  'pool_observations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    poolAddress: varchar('pool_address', { length: 42 }).notNull(),
+    observationIndex: integer('observation_index').notNull(),
+    blockNumber: bigint('block_number', { mode: 'bigint' }).notNull(),
+    tickCumulative: bigint('tick_cumulative', { mode: 'bigint' }).notNull(),
+    secondsPerLiquidityCumulativeX128: numeric('seconds_per_liquidity_cumulative_x128').notNull(),
+    blockTimestamp: timestamp('block_timestamp', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('pool_observations_unique').on(
+      table.poolAddress,
+      table.observationIndex,
+      table.blockNumber,
+    ),
+    index('pool_observations_pool_address_idx').on(table.poolAddress),
+  ],
+)
+
+// -------------------------------------------------------------------------------------------
+// Pending tasks — watch detects, jobs executes. Idempotent by `idempotency_key`.
+// -------------------------------------------------------------------------------------------
+
+export const pendingTasks = pgTable(
+  'pending_tasks',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    taskName: varchar('task_name', { length: 64 }).notNull(),
+    idempotencyKey: varchar('idempotency_key', { length: 256 }).notNull(),
+    payload: jsonb('payload').notNull().default({}),
+    status: varchar('status', { length: 16 }).notNull().default('pending'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    processedAt: timestamp('processed_at', { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex('pending_tasks_idempotency_key_unique').on(table.idempotencyKey),
+    index('pending_tasks_status_idx').on(table.status),
+  ],
+)
+
+// -------------------------------------------------------------------------------------------
+// Agent scores — E6 rollup cache. Recomputed by `apps/jobs` on new Evidence rows.
+// -------------------------------------------------------------------------------------------
+
+export const agentScores = pgTable('agent_scores', {
+  agentId: text('agent_id').primaryKey(),
+  score: numeric('score'),
+  confidence: numeric('confidence'),
+  sampleSize: integer('sample_size').notNull().default(0),
+  methodologyVersion: text('methodology_version').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+// -------------------------------------------------------------------------------------------
 // Relations — read-side convenience only, no behaviour.
 // -------------------------------------------------------------------------------------------
 
@@ -413,3 +475,9 @@ export type AuthorizationRow = typeof authorizations.$inferSelect
 export type NewAuthorizationRow = typeof authorizations.$inferInsert
 export type JobRow = typeof jobs.$inferSelect
 export type NewJobRow = typeof jobs.$inferInsert
+export type PoolObservationRow = typeof poolObservations.$inferSelect
+export type NewPoolObservationRow = typeof poolObservations.$inferInsert
+export type PendingTaskRow = typeof pendingTasks.$inferSelect
+export type NewPendingTaskRow = typeof pendingTasks.$inferInsert
+export type AgentScoreRow = typeof agentScores.$inferSelect
+export type NewAgentScoreRow = typeof agentScores.$inferInsert
