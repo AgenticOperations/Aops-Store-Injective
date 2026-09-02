@@ -859,3 +859,69 @@ contract, not the docs.
 names in decomposition's E8/E12 rows and doc 04 §5's table. No input/output schemas, no error
 shape, no `/llms.txt` text, no A2A Agent Card JSON. This is the highest-leverage thing left
 unwritten: none of today's credential work matters to a Cursor/Hermes caller until this exists.
+
+---
+
+## 2026-09-02 — V1 build complete (KC session). Ready for human + agent use
+
+From KC, for Ryuk.
+
+**Status:** v1 milestone plan (`docs/build/2026-09-02-v1-milestone-plan-kc.md`) — **all chunks
+5a–6 checked.** Backend is no longer stubs. UI scaffold is wired to live API. Local stack runs.
+
+### Ready — humans
+
+| Surface | Port | What works |
+|---------|------|------------|
+| Marketplace (`apps/web`) | 3000 | Browse 4 categories, discover chat, compare, unclaimed, methodology, agent detail/hire pages, job status |
+| Builder console (`apps/console`) | 3002 | Listings table, claim/config/attest/sandbox shells, home stats |
+| API | 3001 | Health, search, get, listings index, quote, hire, me/jobs |
+
+Landing UI this session: Aops logo navbar, Spline hero, typewriter search prompts.
+
+### Ready — agents
+
+| Entry | URL |
+|-------|-----|
+| Discovery | `GET /llms.txt` |
+| Agent card | `GET /.well-known/agent.json` |
+| Catalog (no auth) | `GET /v1/search`, `GET /v1/agents/{id}`, `GET /v1/listings` |
+| Hire (Fresh + AOPS-PoP) | `POST /v1/jobs` after §7 enroll + bind-session |
+| Quote (Standing) | `GET /v1/quote` |
+| History | `GET /v1/me/jobs` |
+
+### Ready — workers
+
+- **`apps/jobs`** — evidence rollup, listing transitions, refund sweep, main loop
+- **`apps/watch`** — PancakeSwap pool observations (mainnet), endpoint liveness → jobs queue
+
+### Verified
+
+- `check:boundaries` — 0 forbidden edges
+- `typecheck` — 21/21
+- `bun test` — ~213 pass (integration e2e passes against Neon when `DATABASE_URL` set)
+- `next build` — web + console clean
+
+### Not ready / honest gaps
+
+- **DB likely empty** — UI shows 0 listings until someone self-registers or seeds
+- **Ring 3** (`custody`, `settlement`) — built, **human review required before merge**
+- **Cut from v1:** E1 crawl, E3/E4 sandbox+attestation, E7 sybil, on-chain broadcast, production Altana
+- **Simulate/testnet default** on capital paths — not mainnet production
+- **Preview page** still fixture-backed (E10 cut)
+- **Console E3/E4** — placeholder only
+
+### Run locally
+
+```bash
+# .env: DATABASE_URL, WATCH_NETWORK=mainnet, AGENT_REGISTRY_BSC_RPC_URL
+cd packages/database && bun --env-file=../../.env run db:migrate
+cd apps/api && bun run dev    # :3001
+cd apps/web && bun run dev    # :3000
+cd apps/console && bun run dev  # :3002
+cd apps/jobs && bun run dev
+cd apps/watch && bun run dev
+```
+
+**Not committed** this session unless you ask — working tree has UI/nav/Spline/typewriter changes
+on top of the v1 backend work.
