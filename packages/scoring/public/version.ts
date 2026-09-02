@@ -5,4 +5,7 @@
  * weight() / score() / confidence() / sybil-independence math. Versioned: every result carries the methodology version that produced it.
  */
 
-export {}
+/** Bump whenever `weight()`, `score()`, or `confidence()`'s formula/constants change — every
+ * `Performance` row pins the version that produced it so it stays re-derivable from raw
+ * Evidence (`architecture/01` §1.6, §1.9). */
+export const SCORING_METHODOLOGY_VERSION = '2026-09-02.1'

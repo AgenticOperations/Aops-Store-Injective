@@ -149,6 +149,9 @@
     "packages/domain": {
       "name": "@repo/domain",
       "version": "0.0.0",
+      "dependencies": {
+        "viem": "catalog:",
+      },
       "devDependencies": {
         "@types/bun": "catalog:",
         "fast-check": "catalog:",
@@ -208,6 +211,9 @@
     "packages/scoring": {
       "name": "@repo/scoring",
       "version": "0.0.0",
+      "dependencies": {
+        "@repo/domain": "workspace:*",
+      },
       "devDependencies": {
         "@types/bun": "catalog:",
         "fast-check": "catalog:",

@@ -22,5 +22,8 @@
     "typescript": "catalog:",
     "@types/bun": "catalog:",
     "fast-check": "catalog:"
+  },
+  "dependencies": {
+    "@repo/domain": "workspace:*"
   }
 }
