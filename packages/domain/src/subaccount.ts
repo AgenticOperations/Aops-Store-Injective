@@ -3,6 +3,15 @@ export interface SubaccountConfig {
   subaccountIndex: number;
 }
 
+export function isValidSubaccountId(subaccountId: string): boolean {
+  try {
+    const parsed = parseSubaccountId(subaccountId);
+    return parsed.subaccountIndex >= 1;
+  } catch {
+    return false;
+  }
+}
+
 export function deriveSubaccountId(ownerAddress: string, subaccountIndex: number): string {
   if (subaccountIndex < 1) {
     throw new Error('Prop seat subaccounts must use index >= 1 to ensure balance isolation');
