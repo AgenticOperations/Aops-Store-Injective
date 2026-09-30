@@ -1,0 +1,102 @@
+/**
+ * Landing hero: Spline robot as a centred backdrop; copy + chat sit on top.
+ * Bottom of the viewer is clip-cropped to hide the free-tier Spline badge.
+ */
+
+.home-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.home-hero__content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.home-hero .ds-hero {
+  padding: clamp(var(--s7), 8vw, 120px) 0 var(--s8);
+}
+
+.home-hero .ds-hero__lede {
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 48ch;
+}
+
+@media (min-width: 1024px) {
+  .home-hero .ds-hero__lede {
+    font-size: 15px;
+  }
+}
+
+.home-hero__visual {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  z-index: 0;
+  width: min(520px, 92vw);
+  height: min(460px, 52vh);
+  min-height: 280px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  overflow: hidden;
+  --spline-crop-bottom: 5rem;
+}
+
+.home-hero__spline-wrap {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  clip-path: inset(0 0 var(--spline-crop-bottom) 0);
+}
+
+.home-hero__spline-mount {
+  width: 100%;
+  height: 100%;
+}
+
+.home-hero__spline--loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: var(--r-panel);
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--gold) 14%, transparent) 0%,
+    transparent 72%
+  );
+}
+
+.home-hero__spline-mount spline-viewer,
+spline-viewer.home-hero__spline {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .home-hero__visual {
+    width: min(560px, 58vw);
+    height: min(520px, 56vh);
+    min-height: 360px;
+    --spline-crop-bottom: 5.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-hero__visual {
+    width: min(320px, 90vw);
+    height: min(280px, 38vh);
+    min-height: 220px;
+    top: 42%;
+    --spline-crop-bottom: 4rem;
+  }
+}

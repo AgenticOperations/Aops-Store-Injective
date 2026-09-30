@@ -1,0 +1,25 @@
+{
+  "name": "@app/watch",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": "app",
+  "scripts": {
+    "dev": "bun --env-file=../../.env --watch src/main.ts",
+    "start": "bun --env-file=../../.env src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@repo/census": "workspace:*",
+    "@repo/database": "workspace:*",
+    "@repo/market-data": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "viem": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "postgres": "catalog:",
+    "typescript": "catalog:"
+  }
+}

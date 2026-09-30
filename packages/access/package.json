@@ -1,0 +1,36 @@
+{
+  "name": "@repo/access",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": 2,
+  "imports": {
+    "#public/*": "./public/*.ts",
+    "#private/*": "./private/*.ts"
+  },
+  "exports": {
+    "./enrollment": "./public/enrollment.ts",
+    "./bind-session": "./public/bind-session.ts",
+    "./token": "./public/token.ts",
+    "./proof": "./public/proof.ts",
+    "./authorization": "./public/authorization.ts",
+    "./revoke": "./public/revoke.ts",
+    "./job-history": "./public/job-history.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@repo/database": "workspace:*",
+    "@repo/domain": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "viem": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "postgres": "catalog:",
+    "typescript": "catalog:"
+  }
+}

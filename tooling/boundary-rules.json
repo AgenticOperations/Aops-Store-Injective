@@ -1,0 +1,16 @@
+{
+  "rules": [
+    {
+      "package": "@app/web",
+      "disallowedImports": ["@repo/database", "@repo/custody/private-keys"]
+    },
+    {
+      "package": "@app/api",
+      "disallowedImports": ["@app/web"]
+    },
+    {
+      "package": "@repo/domain",
+      "disallowedImports": ["@repo/contracts", "@repo/database"]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "name": "@app/jobs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": "app",
+  "scripts": {
+    "dev": "bun --env-file=../../.env --watch src/main.ts",
+    "start": "bun --env-file=../../.env src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@repo/agent-registry": "workspace:*",
+    "@repo/access": "workspace:*",
+    "@repo/census": "workspace:*",
+    "@repo/database": "workspace:*",
+    "@repo/domain": "workspace:*",
+    "@repo/evidence": "workspace:*",
+    "@repo/listings": "workspace:*",
+    "@repo/scoring": "workspace:*",
+    "@repo/settlement": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "viem": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/discovery": "workspace:*",
+    "@types/bun": "catalog:",
+    "postgres": "catalog:",
+    "typescript": "catalog:"
+  }
+}

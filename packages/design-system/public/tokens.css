@@ -1,0 +1,910 @@
+/* ══════════════════════════════════════════════════════════════════════════════════════════════
+   AOPS STORE — DESIGN TOKENS
+
+   Visual direction is BNB Chain's own: near-black ground, one yellow, geometric sans set large
+   and tight, pill geometry, and low-contrast BNB-mark geometry at the edges of the fold. The
+   structural layer underneath it (Section / Grid / Card zones) is unchanged — this file changes
+   how it looks, not how pages are composed.
+   ══════════════════════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ---- Ground and ink ---- */
+  --paper: #0b0b0b;
+  --paper-2: #121212;
+  --panel-raised: #191919;
+  --ink: #ffffff;
+  --ink-soft: #d6d6d6;
+  --ink-muted: #8b8b8b;
+  --rule: #262626;
+  --rule-soft: #1c1c1c;
+
+  /* ---- BNB yellow. `--gold` is the action colour; `--gold-bright` is the display accent. ---- */
+  --gold: #f0b90b;
+  --gold-bright: #fcd535;
+  --survey: var(--gold);
+  --survey-ink: #12100a;
+
+  /* ---- Semantic ---- */
+  --live: #2ebd85;
+  --alert: #f6465d;
+  --warn: #f0b90b;
+  --chip: #1a1a1a;
+
+  --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow-lift: 0 8px 30px rgb(0 0 0 / 45%);
+  --focus-ring: 0 0 0 3px rgb(240 185 11 / 35%);
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* ---- Type ---- */
+  --font: var(--font-gellix, "Gellix"), "Inter", "Segoe UI", sans-serif;
+  --display: var(--font);
+  --mono: var(--font-plex-mono, "IBM Plex Mono"), ui-monospace, monospace;
+
+  /* ---- Radius. Pills for anything you click, soft corners for anything that holds content. ---- */
+  --r-pill: 999px;
+  --r-card: 16px;
+  --r-panel: 14px;
+  --r-sm: 8px;
+
+  /* ---- Spacing scale ---- */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 80px;
+
+  --gutter: 28px;
+  --max: 1240px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: var(--gold-bright);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--gold);
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--r-sm);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* ---- Headings ------------------------------------------------------------ */
+/* Set tight. The display face is geometric and wide, so it needs negative tracking and a
+   sub-1.1 line-height to hold together at large sizes — the reference sets it the same way. */
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0;
+  color: var(--ink);
+}
+
+h1 {
+  font-size: clamp(2rem, 3.4vw, 2.9rem);
+}
+
+h2 {
+  font-size: clamp(1.4rem, 2vw, 1.75rem);
+}
+
+h3 {
+  font-size: 1.0625rem;
+  letter-spacing: -0.02em;
+}
+
+/* The yellow half of a headline. Flat colour, not a gradient — the reference states its accent
+   plainly, and a gradient would read as decoration on a page whose job is to look measured. */
+.ds-accent {
+  color: var(--gold-bright);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LAYOUT LAYER
+
+   A page picks primitives and supplies content. It does not invent spacing,
+   column counts or heading margins.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ---- Page frame -------------------------------------------------------- */
+
+.ds-page {
+  min-height: 100vh;
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+}
+
+.ds-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--paper) 78%, transparent);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.ds-header__inner {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: var(--s4) var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s5);
+}
+
+.ds-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.ds-nav {
+  display: flex;
+  gap: var(--s1);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.ds-nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 15px;
+  padding: 8px 14px;
+  border-radius: var(--r-pill);
+  transition: color 150ms var(--ease), background-color 150ms var(--ease);
+}
+
+.ds-nav a:hover {
+  color: var(--ink);
+  background: var(--chip);
+}
+
+.ds-main {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: var(--s7) var(--gutter) var(--s8);
+}
+
+/* ---- Fold decoration ---------------------------------------------------- */
+/* BNB-mark geometry flanking the headline, as on BNB Chain's own fold: it starts just below the
+   header, runs down past the search control, and bleeds off both outer edges.
+
+   The artwork ships pre-dimmed — dark grey shapes on transparency — so it is drawn at 92% and
+   left alone. An earlier pass dropped it to 28% with a two-axis mask and the result was invisible.
+   The only fade kept is a short one at the bottom, so the geometry ends rather than being cut. */
+
+.ds-deco {
+  position: absolute;
+  top: 92px;
+  z-index: -1;
+  height: auto;
+  opacity: 0.92;
+  pointer-events: none;
+  user-select: none;
+  mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+}
+
+.ds-deco.is-left {
+  left: 0;
+  width: min(25vw, 336px);
+}
+
+.ds-deco.is-right {
+  right: 0;
+  width: min(29vw, 419px);
+}
+
+/* Below 1200px the narrower artwork swaps in via <picture>; it is a different crop, so it needs
+   its own widths rather than a scaled-down version of the wide one. */
+@media (max-width: 1200px) {
+  .ds-deco.is-left {
+    width: 103px;
+  }
+  .ds-deco.is-right {
+    width: 102px;
+  }
+}
+
+/* Under 860px the content column reaches the edges and the geometry would sit under text. */
+@media (max-width: 860px) {
+  .ds-deco {
+    display: none;
+  }
+}
+
+/* ---- Hero -------------------------------------------------------------- */
+
+.ds-hero {
+  text-align: center;
+  padding: clamp(var(--s7), 8vw, 120px) 0 var(--s8);
+}
+
+.ds-hero h1 {
+  font-size: clamp(2.6rem, 6.4vw, 5rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  max-width: 16ch;
+  margin: 0 auto var(--s5);
+  text-wrap: balance;
+}
+
+.ds-hero__lede {
+  max-width: 54ch;
+  margin: 0 auto var(--s6);
+  color: var(--ink-muted);
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.ds-hero__slot {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* ---- Stat bar ----------------------------------------------------------- */
+/* The reference's closing move on the fold: a centred row of figures split by hairlines. Used
+   here for the one honest headline number set we have. */
+
+.ds-statbar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--rule-soft);
+  margin-top: var(--s8);
+  padding-top: var(--s6);
+}
+
+.ds-statbar > * {
+  flex: 1 1 160px;
+  text-align: center;
+  padding: 0 var(--s5);
+  border-left: 1px solid var(--rule-soft);
+}
+
+.ds-statbar > *:first-child {
+  border-left: none;
+}
+
+.ds-statbar .ds-statbar__value {
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.ds-statbar .ds-statbar__label {
+  color: var(--ink-muted);
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+/* ---- Section ------------------------------------------------------------ */
+
+.ds-section {
+  margin-top: var(--s8);
+}
+
+.ds-section:first-child {
+  margin-top: 0;
+}
+
+.ds-section__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s5);
+  margin-bottom: var(--s5);
+  flex-wrap: wrap;
+}
+
+.ds-section__sub {
+  margin: var(--s2) 0 0;
+  color: var(--ink-muted);
+  font-size: 15px;
+  max-width: 66ch;
+}
+
+.ds-subsection {
+  margin-top: var(--s5);
+}
+
+/* ---- Page head ---------------------------------------------------------- */
+
+.ds-pagehead {
+  display: grid;
+  gap: var(--s4);
+  padding-bottom: var(--s6);
+  border-bottom: 1px solid var(--rule-soft);
+  margin-bottom: var(--s7);
+}
+
+.ds-pagehead__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+
+.ds-pagehead__lede {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 16px;
+  max-width: 68ch;
+}
+
+/* ---- Grid --------------------------------------------------------------- */
+
+.ds-grid {
+  display: grid;
+  gap: var(--s4);
+}
+
+.ds-grid.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ds-grid.cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ds-grid.cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1080px) {
+  .ds-grid.cols-4,
+  .ds-grid.cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .ds-grid.cols-2,
+  .ds-grid.cols-3,
+  .ds-grid.cols-4 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---- Card --------------------------------------------------------------- */
+/* Zoned, because a card here carries four different kinds of claim (what it is / what we
+   measured / what it costs / what to do next) and running them together is what made the old
+   cards hard to scan. */
+
+.ds-card {
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ds-card__band {
+  background: var(--panel-raised);
+  border-bottom: 1px solid var(--rule);
+  padding: var(--s3) var(--s5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+
+.ds-card__body {
+  padding: var(--s5);
+  display: grid;
+  gap: var(--s4);
+  align-content: start;
+  flex: 1;
+  min-width: 0;
+}
+
+.ds-card__foot {
+  border-top: 1px dashed var(--rule);
+  margin: 0 var(--s5);
+  padding: var(--s4) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+
+.ds-card.is-plain {
+  padding: var(--s5);
+  display: grid;
+  gap: var(--s3);
+  align-content: start;
+}
+
+a.ds-card {
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 200ms var(--ease), background-color 200ms var(--ease), transform 200ms
+    var(--ease);
+}
+
+a.ds-card:hover {
+  border-color: color-mix(in srgb, var(--gold) 55%, transparent);
+  background: var(--panel-raised);
+  transform: translateY(-2px);
+}
+
+a.ds-card:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+a.ds-card.is-active {
+  border-color: var(--gold);
+  background: var(--panel-raised);
+}
+
+a.ds-card.is-active::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--gold);
+}
+
+/* ---- Panel -------------------------------------------------------------- */
+
+.ds-panel {
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  padding: var(--s5);
+  display: grid;
+  gap: var(--s3);
+  align-content: start;
+}
+
+.ds-panel.is-quiet {
+  background: transparent;
+}
+
+/* ---- Button ------------------------------------------------------------- */
+/* Pill geometry, generous padding. Primary is the one solid yellow control on a screen. */
+
+.ds-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  background: var(--gold);
+  color: var(--survey-ink);
+  padding: 11px 22px;
+  border: 1px solid var(--gold);
+  border-radius: var(--r-pill);
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 150ms var(--ease), border-color 150ms var(--ease), transform 120ms
+    var(--ease);
+}
+
+.ds-button:hover {
+  background: var(--gold-bright);
+  border-color: var(--gold-bright);
+  color: var(--survey-ink);
+}
+
+.ds-button:active {
+  transform: translateY(1px);
+}
+
+.ds-button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.ds-button:disabled,
+.ds-button[aria-disabled="true"] {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: default;
+}
+
+.ds-button.is-ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--rule);
+}
+
+.ds-button.is-ghost:hover {
+  background: var(--chip);
+  border-color: color-mix(in srgb, var(--gold) 60%, transparent);
+  color: var(--ink);
+}
+
+/* ---- Search bar --------------------------------------------------------- */
+/* The reference's single most recognisable control: a white pill on black, with the action as a
+   dark pill inside it. It is the only light surface on the page, which is what makes the one
+   thing we want a visitor to touch impossible to miss. */
+
+.ds-searchbar {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  background: #ffffff;
+  border: 1px solid #ffffff;
+  border-radius: var(--r-pill);
+  padding: 6px 6px 6px var(--s5);
+  transition: box-shadow 160ms var(--ease);
+}
+
+.ds-searchbar:focus-within {
+  box-shadow: var(--focus-ring);
+}
+
+.ds-searchbar .ds-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  color: #11110f;
+  border: none;
+  padding: 10px 0;
+  font-size: 16px;
+}
+
+.ds-searchbar .ds-input::placeholder {
+  color: #6d6d6d;
+}
+
+.ds-searchbar .ds-input:focus {
+  outline: none;
+}
+
+/* The action inside the white pill inverts: dark ground, yellow label. */
+.ds-searchbar .ds-button {
+  background: #11110f;
+  border-color: #11110f;
+  color: var(--gold-bright);
+  padding: 11px 20px;
+}
+
+.ds-searchbar .ds-button:hover {
+  background: #000000;
+  border-color: #000000;
+  color: var(--gold-bright);
+}
+
+/* ---- Chip --------------------------------------------------------------- */
+
+.ds-chip {
+  display: inline-flex;
+  align-items: center;
+  background: var(--chip);
+  color: var(--ink-soft);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-pill);
+  padding: 7px 16px;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 150ms var(--ease), border-color 150ms var(--ease), background-color 150ms
+    var(--ease);
+}
+
+.ds-chip:hover {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--gold) 60%, transparent);
+}
+
+.ds-chip:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.ds-chip.is-active {
+  color: var(--survey-ink);
+  border-color: var(--gold);
+  background: var(--gold);
+}
+
+/* ---- Confidence meter --------------------------------------------------- */
+
+.ds-meter {
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  height: 4px;
+  background: var(--chip);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+
+.ds-meter > span {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+}
+
+/* ---- Table -------------------------------------------------------------- */
+
+.ds-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.ds-table th,
+.ds-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: var(--s3) var(--s4);
+  border-bottom: 1px solid var(--rule);
+}
+
+.ds-table th {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.ds-table td.is-num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ds-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ds-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  background: var(--paper-2);
+}
+
+/* ---- Chip row / stats / deflist / actions -------------------------------- */
+
+.ds-chiprow {
+  display: flex;
+  gap: var(--s2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.ds-stats {
+  display: grid;
+  gap: var(--s5);
+  /* 172px is the width at which the longest real value in this product ("CAKE/BNB 0.25%") stops
+     wrapping — a wrapped value breaks the baseline alignment of every other stat in the row. */
+  grid-template-columns: repeat(auto-fit, minmax(172px, 1fr));
+}
+
+.ds-stats.is-boxed {
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  padding: var(--s5);
+}
+
+.ds-deflist {
+  display: grid;
+  gap: var(--s3);
+  margin: 0;
+  font-size: 15px;
+}
+
+.ds-deflist > div {
+  display: flex;
+  gap: var(--s4);
+}
+
+.ds-deflist dt {
+  color: var(--ink-muted);
+  min-width: 128px;
+  flex-shrink: 0;
+}
+
+.ds-deflist dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.ds-actions {
+  display: flex;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.ds-actions.is-centered {
+  justify-content: center;
+}
+
+/* ---- Prose -------------------------------------------------------------- */
+
+.ds-prose {
+  max-width: 68ch;
+  font-size: 16px;
+  color: var(--ink-soft);
+}
+
+.ds-prose p {
+  margin: 0 0 var(--s3);
+}
+
+.ds-prose > :last-child {
+  margin-bottom: 0;
+}
+
+.ds-prose ol,
+.ds-prose ul {
+  margin: 0;
+  padding-left: var(--s5);
+  display: grid;
+  gap: var(--s3);
+}
+
+.ds-note {
+  margin: var(--s3) 0 0;
+  color: var(--ink-muted);
+  font-size: 13px;
+  max-width: 68ch;
+}
+
+/* ---- Form field --------------------------------------------------------- */
+
+.ds-field {
+  display: grid;
+  gap: var(--s2);
+  margin-bottom: var(--s4);
+}
+
+.ds-field > label {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.ds-field > input,
+.ds-field > select,
+.ds-field > textarea {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
+  padding: 11px 14px;
+  width: 100%;
+}
+
+.ds-field > input:focus,
+.ds-field > select:focus,
+.ds-field > textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: var(--focus-ring);
+}
+
+.ds-field > small {
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+
+/* ---- Ladder ------------------------------------------------------------- */
+
+.ds-ladder {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.ds-ladder > li {
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--rule);
+  color: var(--ink-muted);
+  background: var(--chip);
+}
+
+.ds-ladder > li.is-done {
+  color: var(--live);
+  border-color: color-mix(in srgb, var(--live) 40%, transparent);
+  background: color-mix(in srgb, var(--live) 10%, transparent);
+}
+
+.ds-ladder > li.is-current {
+  color: var(--survey-ink);
+  background: var(--gold);
+  border-color: var(--gold);
+  font-weight: 500;
+}
+
+/* ---- Engine rail -------------------------------------------------------- */
+
+.ds-rail-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 2px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: ds-pulse 2.2s var(--ease) infinite;
+}
+
+@keyframes ds-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-rail-dot {
+    animation: none;
+  }
+  a.ds-card,
+  .ds-button,
+  .ds-chip,
+  .ds-searchbar,
+  .ds-nav a {
+    transition: none;
+  }
+}

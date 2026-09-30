@@ -1,0 +1,31 @@
+{
+  "name": "@app/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": "app",
+  "scripts": {
+    "dev": "bun --env-file=../../.env --watch src/main.ts",
+    "start": "bun --env-file=../../.env src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@hono/zod-openapi": "catalog:",
+    "@repo/access": "workspace:*",
+    "@repo/custody": "workspace:*",
+    "@repo/database": "workspace:*",
+    "@repo/discovery": "workspace:*",
+    "@repo/domain": "workspace:*",
+    "@repo/evidence": "workspace:*",
+    "@repo/settlement": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "hono": "catalog:",
+    "viem": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}

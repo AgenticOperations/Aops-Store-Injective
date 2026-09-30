@@ -1,0 +1,24 @@
+{
+  "name": "@repo/metrics",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": 0,
+  "imports": {
+    "#public/*": "./public/*.ts",
+    "#private/*": "./private/*.ts"
+  },
+  "exports": {
+    "./kpi": "./public/kpi.ts",
+    "./ontology": "./public/ontology.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:",
+    "fast-check": "catalog:"
+  }
+}

@@ -1,0 +1,28 @@
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.site-brand__icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.site-brand__wordmark {
+  width: auto;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .site-brand__wordmark {
+    height: 18px;
+  }
+
+  .site-brand__icon {
+    width: 24px;
+    height: 24px;
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "@repo/market-data",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": 1,
+  "imports": {
+    "#public/*": "./public/*.ts",
+    "#private/*": "./private/*.ts"
+  },
+  "exports": {
+    "./positions": "./public/positions.ts",
+    "./pools": "./public/pools.ts",
+    "./observe": "./public/observe.ts",
+    "./prices": "./public/prices.ts",
+    "./keys": "./public/keys.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:"
+  },
+  "dependencies": {
+    "viem": "catalog:",
+    "zod": "catalog:"
+  }
+}

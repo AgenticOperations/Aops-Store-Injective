@@ -1,0 +1,27 @@
+{
+  "name": "@repo/evidence",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": 2,
+  "imports": {
+    "#public/*": "./public/*.ts",
+    "#private/*": "./private/*.ts"
+  },
+  "exports": {
+    "./write": "./public/write.ts",
+    "./query": "./public/query.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@repo/database": "workspace:*",
+    "drizzle-orm": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@repo/census",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": 1,
+  "imports": {
+    "#public/*": "./public/*.ts",
+    "#private/*": "./private/*.ts"
+  },
+  "exports": {
+    "./probe": "./public/probe.ts",
+    "./keys": "./public/keys.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  }
+}

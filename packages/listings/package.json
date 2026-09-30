@@ -1,0 +1,31 @@
+{
+  "name": "@repo/listings",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": 2,
+  "imports": {
+    "#public/*": "./public/*.ts",
+    "#private/*": "./private/*.ts"
+  },
+  "exports": {
+    "./lifecycle": "./public/lifecycle.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@repo/agent-registry": "workspace:*",
+    "@repo/census": "workspace:*",
+    "@repo/database": "workspace:*",
+    "@repo/domain": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "viem": "catalog:"
+  },
+  "devDependencies": {
+    "postgres": "catalog:",
+    "typescript": "catalog:",
+    "@types/bun": "catalog:"
+  }
+}

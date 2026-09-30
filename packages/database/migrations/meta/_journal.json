@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1788331742222,
+      "tag": "0000_classy_bug",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788331750050,
+      "tag": "0001_aops_app_role_and_evidence_append_only",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788331760000,
+      "tag": "0002_listings_endpoint_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788331770000,
+      "tag": "0003_watch_jobs_support",
+      "breakpoints": true
+    }
+  ]
+}

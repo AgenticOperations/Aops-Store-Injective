@@ -1,0 +1,29 @@
+{
+  "name": "@repo/observability",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "ring": "shared",
+  "imports": {
+    "#public/*": "./public/*.ts",
+    "#private/*": "./private/*.ts"
+  },
+  "exports": {
+    "./logger": "./public/logger.ts",
+    "./errors": "./public/errors.ts",
+    "./keys": "./public/keys.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/bun": "catalog:"
+  },
+  "dependencies": {
+    "pino": "catalog:",
+    "@sentry/node": "catalog:",
+    "zod": "catalog:"
+  }
+}
