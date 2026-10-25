@@ -1,0 +1,4 @@
+[
+  { "marketId": "INJ/USDT", "price": 25.4, "quantity": 100, "isBuy": true },
+  { "marketId": "INJ/USDT", "price": 25.6, "quantity": 50, "isBuy": false }
+]
