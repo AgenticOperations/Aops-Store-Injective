@@ -1,0 +1,10 @@
+{
+  "market": "INJ/USDT",
+  "clearingPrice": 24.85,
+  "events": [
+    { "type": "ORDER_INTENT", "agent": "Builder_A", "notional": 250, "approved": true },
+    { "type": "OVERSIZED_INTENT", "agent": "Builder_A", "notional": 8000, "approved": false, "reason": "MaxNotionalExceeded" },
+    { "type": "MARK_LOSS_TICK", "agent": "Rogue_Bot", "equity": 880, "action": "CLOSE_ONLY" },
+    { "type": "CHALLENGE_PASS", "agent": "Builder_A", "pnl": 6.8, "action": "AUTO_PROMOTE_LEVEL_1" }
+  ]
+}
