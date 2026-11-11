@@ -7,7 +7,6 @@
 [![Injective](https://img.shields.io/badge/Network-Injective%20L1-blue?logo=injective)](https://injective.com/)
 [![CosmWasm](https://img.shields.io/badge/Smart%20Contracts-CosmWasm%20%2F%20Rust-red)](https://cosmwasm.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
-[![Track](https://img.shields.io/badge/Hackathon-Bangkok%20Hacker%20House%202026-orange)](https://injective.com/)
 
 *Anyone can launch 1,000 AI trading bots tonight; a few will look brilliant by pure luck.*  
 *Aops-Desk is the Injective prop firm that separates skill from luck: luck-adjusted records from real fills, contract-enforced limits, and capital that scales with proof.*
@@ -29,11 +28,8 @@
 7. [Why Only on Injective?](#7-why-only-on-injective)
 8. [Monorepo Package Layout](#8-monorepo-package-layout)
 9. [Quickstart & Development Guide](#9-quickstart--development-guide)
-10. [The 4-Minute Bangkok Demo](#10-the-4-minute-bangkok-demo)
-11. [Business Model](#11-business-model)
-12. [Risks & Hard Questions (Judges FAQ)](#12-risks--hard-questions-judges-faq)
-13. [The Team](#13-the-team)
-14. [Glossary](#14-glossary)
+10. [The Team](#10-the-team)
+11. [Glossary](#11-glossary)
 
 ---
 
@@ -68,7 +64,7 @@ Traditional retail prop trading firms offer traders funded accounts in exchange 
 On crypto agent platforms, bots obtain on-chain identities (like Injective’s ERC-8004 Agent Registry). However:
 - There is no native way to delegate your capital to an agent under strict, unbypassable execution limits.
 - Displayed track records are self-reported or based on AMM token swaps, susceptible to wash-trading and retroactively deleted failures.
-- Injective’s own roadmap notes that upcoming copy-trading agents require a method to verify **"genuine performance (not wash-traded)"**, but existing tooling provides no verification mechanism.
+- Upcoming copy-trading systems lack an on-chain mechanism to tell genuine alpha from wash-traded volume.
 
 ---
 
@@ -122,7 +118,7 @@ sequenceDiagram
 
 1. **A Firm Posts a Seat**: Northwind Capital posts a funded seat: "$1,000 initial capital, BTC/USDT and INJ/USDT perpetuals only, max 3x leverage, 5% daily loss limit, 10% trailing drawdown, 80/20 profit split."
 2. **An Agent Applies**: Builder registers their agent on Injective's ERC-8004 registry. Every agent this builder has ever deployed is linked to their identity.
-3. **Challenge Starts with Real Capital**: The agent starts with real capital in its own isolated subaccount (subaccount index $\ge 1$). The challenge fee is escrowed in code, not held by the firm.
+3. **Challenge Starts with Real Capital**: The agent starts with real capital in its own isolated subaccount (subaccount index ≥ 1). The challenge fee is escrowed in code, not held by the firm.
 4. **Every Order is Checked Pre-Execution**: The bot cannot send transactions directly to the market. It submits trade intents to the Mandate contract, which enforces market IDs, notional caps, and leverage before proxying to the exchange precompile (`0x65`).
 5. **Losses are Monitored Every Block**: Even without new orders, adverse mark price moves are evaluated every block (~650ms). If equity drops below trailing loss limits, the contract flips the seat to `CloseOnly`.
 6. **Statistically Verified Promotion**: When the agent reaches its profit target with statistically significant volume, the contract promotes it from Challenge ($100) &rarr; Funded Level 1 ($1,000) &rarr; Funded Level 2 ($10,000).
@@ -136,7 +132,7 @@ sequenceDiagram
 ### 1. Limits the Agent Physically Cannot Break
 In institutional desks, traders cannot bypass risk managers. Aops-Desk implements this on-chain:
 - **No Agent Key Custody**: The agent's private key has no withdrawal or direct trading permissions. Only the CosmWasm Mandate contract holds AuthZ proxy permissions on the subaccount.
-- **Isolated Subaccounts**: Injective subaccounts allow one wallet address to manage multiple discrete balances. Subaccount index 0 shares balance with the wallet; Aops-Desk mandates use **subaccount index $\ge 1$**, completely isolating allocator capital.
+- **Isolated Subaccounts**: Injective subaccounts allow one wallet address to manage multiple discrete balances. Subaccount index 0 shares balance with the wallet; Aops-Desk mandates use **subaccount index ≥ 1**, completely isolating allocator capital.
 - **Honest Constraint Labeling**:
   - `ENFORCED_ON_CHAIN`: Message types, pair allowlists, spend limits, duration.
   - `GUARDED_PRE_ORDER`: Leverage calculations, notional order caps, style drift filters.
@@ -144,9 +140,12 @@ In institutional desks, traders cannot bypass risk managers. Aops-Desk implement
 
 ### 2. Track Records That Separate Skill From Luck
 - **Every Attempt Counts**: When evaluating an agent, the indexer aggregates all bot challenges launched under the builder’s ERC-8004 identity.
-- **Deflated Sharpe Ratio (DSR)**: Implements Bailey & López de Prado’s formulation:
-  $$\text{DSR} = Z\left(\frac{(\widehat{\text{SR}} - \text{SR}^*) \sqrt{T-1}}{\sqrt{1 - \widehat{\gamma}_3 \widehat{\text{SR}} + \frac{\widehat{\gamma}_4 - 1}{4}\widehat{\text{SR}}^2}}\right)$$
-  where $\text{SR}^*$ adjusts for selection bias across $N$ total strategy trials, and $\widehat{\gamma}_3, \widehat{\gamma}_4$ account for skewness and kurtosis.
+- **Deflated Sharpe Ratio (DSR)**: Implements Bailey & López de Prado’s formulation to discount raw performance by strategy trial volume, where $\text{SR}^*$ adjusts for selection bias across $N$ total strategy trials registered under the builder's identity, and $\widehat{\gamma}_3, \widehat{\gamma}_4$ account for skewness and kurtosis:
+
+$$
+\text{DSR} = Z\left(\frac{(\widehat{\text{SR}} - \text{SR}^*) \sqrt{T-1}}{\sqrt{1 - \widehat{\gamma}_3 \widehat{\text{SR}} + \frac{\widehat{\gamma}_4 - 1}{4}\widehat{\text{SR}}^2}}\right)
+$$
+
 - **Versioned Records**: Each model deployment commits a `version_hash`. Modifying bot logic restarts the performance record.
 - **Daily On-Chain Merkle Hash**: All verified fills from Injective's batch auctions are hashed into a daily Merkle root and anchored on-chain for public auditability.
 
@@ -241,8 +240,7 @@ aops-store-injective/
 │   └── design-system/           # Shared UI components and enforcement badges
 ├── demo/
 │   ├── agents/                  # Reference trading bots (BTC Grid & INJ Momentum)
-│   ├── fixtures/                # Verified batch auction order book replay data
-│   └── bangkok-demo-script.md   # Exact 4-minute presentation script
+│   └── fixtures/                # Verified batch auction order book replay data
 └── tooling/
     ├── check-boundaries.ts      # AST architectural boundary validator
     └── run-cosmwasm-tests.sh    # Cargo test execution harness
@@ -285,66 +283,41 @@ bun test packages/scoring/tests/monte-carlo.test.ts
 
 ---
 
-## 10. The 4-Minute Bangkok Demo
+## 10. The Team
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ MINUTE 1: The Trap (The AI Bot Flood)                                       │
-│ Show raw returns leaderboard. Builder B (who launched 50 random bots) is    │
-│ sitting at #1 with an apparent +45% return.                                 │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ MINUTE 2: The Truth (Luck Adjustment / DSR)                                 │
-│ Toggle the "Luck Adjusted (DSR)" switch. Builder B's star plummets down the │
-│ board. Builder A (who entered 1 disciplined agent) takes #1.                │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ MINUTE 3: The Mandate (Limits the Agent Can't Break)                        │
-│ Builder A's bot attempts an oversized order ($8k > $5k limit) -> On-chain   │
-│ rejection. A mark price drop triggers per-block CloseOnly mode.             │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ MINUTE 4: The Ladder & Payout                                               │
-│ Bot hits +6% target cleanly -> Auto-promoted from $100 to $1,000.           │
-│ High-water mark profit split distributed 80/20 by smart contract.           │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+Aops-Desk is built by a specialized team combining institutional engineering, applied zero-knowledge cryptography, decentralized finance infrastructure, and full-stack product execution:
 
----
+### [Abhinav Pangaria](https://abhinavpangaria.com) — Architect
+**Domain:** System Architecture, Product Strategy, Business Operations & Financial Engineering  
+- Founder and Lead Architect of **AgentOps** — an open-source spend-governance control plane for autonomous AI agents featuring deny-by-default policy engines, append-only SHA-256 audit ledgers, and recursive multi-hop delegation runtimes.
+- Former Software Engineer at **JPMorgan Chase**, architecting high-throughput, fault-tolerant financial settlement and distributed backend systems.
+- ex-Co-founder of **PayZoll** — a cross-chain payroll SaaS platform serving enterprise and Web3 workforces.
+- **Stellar SCF Grantee ($100,000 grant)** — designed and delivered *Tesseract* (a zero-knowledge payment privacy and compliance layer on Soroban) and *Loom* (an AI agent orchestration and graph execution verification harness).
+- Computer Science & Engineering graduate from IIIT Guwahati (9.10 CGPA).
+- Leads core technical architecture, CosmWasm mandate contract engineering, protocol tokenomics, allocator partnerships, and overall product operations.
 
-## 11. Business Model
+### [Hridam Basu](https://github.com/hridambasu) — Core Contributor
+**Domain:** Verification, Cryptography, Risk Engine & Systems Engineering  
+- Founder & CTO of **Rump Labs**; researcher and systems developer in zero-knowledge cryptography and threshold signatures.
+- Lead contributor to **Anon-Aadhaar** (Ethereum Foundation Privacy & Scaling Explorations grantee), implementing production ZK verifiers and circuits across both Halo2 and Noir.
+- Contributor to **Bolt Labs'** threshold ECDSA (TSS-ECDSA) MPC wallet infrastructure; co-author of IACR ePrint 2026/883.
+- Creator of **Meridian** (curated EVM risk vaults with automated liquidation keeper networks) and **Kestrel** (Solana risk and collateral monitor).
+- Leads cryptographic proof generation, daily Merkle root state anchoring on Injective, on-chain verification math, and quantitative market-risk safeguards.
 
-Aops-Desk is not a prop firm; it is the **infrastructure on which prop firms, DAOs, and allocators launch funded desks**, and the portable reputation layer agents carry across firms:
-
-1. **Protocol Trading Fee Sharing**: Injective routes a proportion of order trading fees to the `fee_recipient` address. Aops-Desk receives a share on every trade executed through mandate contracts.
-2. **Per-Seat Infrastructure Fee / Profit Cut**: Prop firms pay a nominal infrastructure SaaS fee or minor split share (e.g. 2–5% of the firm's profit share) in exchange for automated risk enforcement and zero-discretion settlements.
-3. **Enterprise Talent Scouting**: Proprietary trading desks pay for access to search and recruit agents with verified, luck-adjusted historical records.
+### [Kaushal Chaudhari](https://github.com/kaushalya4s5s7) — Full-Stack Developer
+**Domain:** Full-Stack Architecture, Front-End Systems, Developer Advocacy & Growth  
+- Core full-stack engineer leading client-side web application architectures, Next.js / TypeScript microfrontends, and high-performance API gateways.
+- Creator of Aops-Desk's UI design system, interactive PEAGASIS conversational mandate cards, real-time DSR leaderboard switches, and AST package boundary linting tooling.
+- Drives developer relations, ecosystem documentation, community engagement, technical marketing, and external AI agent builder onboarding.
 
 ---
 
-## 12. Risks & Hard Questions (Judges FAQ)
-
-**Q: Prices move without any trade executing. How do you catch that drawdown breach?**  
-*A: The Rust engine inspects subaccount equity on every block (~650ms) using Injective mark prices and calls `check_block_risk()`. Anyone can invoke the public check, ensuring safety doesn't rely solely on our servers. In the future, WasmX can execute this natively on-chain.*
-
-**Q: Isn't this just copy-trading?**  
-*A: No. Copy-trading mirrors unverified orders with zero risk bounds and no capital protection. Aops-Desk enforces strict mandates before orders reach the market, discounts survivorship bias, and ensures the agent never has custody of investor funds.*
-
-**Q: Can an agent builder game the attempt count by using multiple wallet addresses?**  
-*A: All challenges require linking an ERC-8004 identity with a refundable challenge fee. Our wash-trade filter detects correlated fill timing, reciprocal counterparty patterns, and shared execution infrastructure across multiple addresses.*
-
----
-
-## 13. The Team
-
-- **[Hridam Basu](https://github.com/hridambasu)** — Founder & CTO of Rump Labs. Lead contributor to Anon-Aadhaar (Ethereum Foundation PSE grantee, Halo2 & Noir ZK verifiers). Contributor to Bolt Labs TSS-ECDSA, co-author of IACR ePrint 2026/883, and author of Meridian (curator vaults with liquidation keepers).
-- **[Abhinav Pangaria](https://github.com/18Abhinav07)** — Lead Architect of AgentOps. Spend-governance control plane for AI agents with deny-by-default policy engines, append-only SHA-256 audit ledgers, and second-hop delegation runtimes.
-
----
-
-## 14. Glossary
+## 11. Glossary
 
 - **Prop Firm**: A proprietary trading company that allocates capital to traders and takes a share of real profits.
 - **Seat**: An isolated allocation of funds defined by a mandate envelope, capital ladder, and profit split.
 - **Mandate**: Deterministic risk bounds (allowed pairs, max notional, leverage limit, daily loss, drawdown).
-- **Subaccount**: A segregated balance partitioned under an Injective address (index $\ge 1$).
+- **Subaccount**: A segregated balance partitioned under an Injective address (index ≥ 1).
 - **Exchange Precompile (`0x65`)**: Injective's built-in EVM contract allowing authorized contracts to proxy order execution.
 - **Chain Stream**: Injective's gRPC node stream delivering real-time block trades, balances, and mark prices.
 - **Deflated Sharpe Ratio (DSR)**: A statistical adjustment to Sharpe ratios penalizing strategy selection bias from multiple backtests or bot trials.
@@ -354,5 +327,5 @@ Aops-Desk is not a prop firm; it is the **infrastructure on which prop firms, DA
 ---
 
 <div align="center">
-<b>Aops-Desk · Bangkok Hacker House 2026 · Built on Injective</b>
+<b>Aops-Desk · Non-Custodial Prop Firm Marketplace for AI Agents · Built on Injective</b>
 </div>
